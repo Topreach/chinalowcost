@@ -30,6 +30,30 @@ class Auth {
   cookie(token,maxAge=43200) { return `${this.settings.secure?'__Host-clc_session':'clc_session'}=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${maxAge}${this.settings.secure?'; Secure':''}`; }
   session(req) { const name=this.settings.secure?'__Host-clc_session':'clc_session'; const token=(req.headers.cookie||'').split(';').map(x=>x.trim()).find(x=>x.startsWith(name+'='))?.slice(name.length+1); if(!token||!/^[a-f0-9]{64}$/.test(token))return null; const hash=digest(token),s=this.db.prepare('SELECT * FROM sessions WHERE hash=?').get(hash),now=Date.now(); if(!s)return null; const user=this.user(s.user_id); if(!user?.active||!user.verified||user.mfa_enabled&&!s.mfa||s.created<now-43200000||s.seen<now-1800000){this.db.prepare('DELETE FROM sessions WHERE hash=?').run(hash);return null;}this.db.prepare('UPDATE sessions SET seen=? WHERE hash=?').run(now,hash); return {...s,user}; }
   async login(email,password,otp) { const user=emailValid(email)?this.db.prepare('SELECT * FROM users WHERE email=?').get(email.toLowerCase()):null; this.dummy ||= passwordHash(random()); const good=await passwordMatches(password,user?.password||await this.dummy); if(!good||!user?.active||!user.verified)return null; if(user.mfa_enabled&&!this.factor(user,otp))return null; this.store.audit(user.id,'session.login',user.id); return this.issue(user,!!user.mfa_enabled); }
+  async beginLogin(email,password){
+    const user=emailValid(email)?this.db.prepare('SELECT * FROM users WHERE email=?').get(email.toLowerCase()):null;
+    this.dummy ||= passwordHash(random());
+    if(!await passwordMatches(password,user?.password||await this.dummy)||!user?.active||!user.verified)return null;
+    if(!user.mfa_enabled){this.store.audit(user.id,'session.login',user.id);return this.issue(user,false);}
+    this.db.exec('CREATE TABLE IF NOT EXISTS login_factors(hash TEXT PRIMARY KEY,user_id TEXT,password_hash TEXT,expires INTEGER,attempts INTEGER)');
+    this.db.prepare('DELETE FROM login_factors WHERE expires<? OR user_id=?').run(Date.now(),user.id);
+    const token=random();this.db.prepare('INSERT INTO login_factors VALUES(?,?,?,?,0)').run(digest(token),user.id,digest(user.password),Date.now()+300000);
+    return {factorRequired:true,challenge:token};
+  }
+  finishLogin(token,otp){
+    if(typeof token!=='string'||!/^[a-f0-9]{64}$/.test(token))return null;
+    this.db.exec('CREATE TABLE IF NOT EXISTS login_factors(hash TEXT PRIMARY KEY,user_id TEXT,password_hash TEXT,expires INTEGER,attempts INTEGER)');
+    return this.store.transaction(()=>{
+      const hash=digest(token),challenge=this.db.prepare('SELECT * FROM login_factors WHERE hash=?').get(hash);
+      if(!challenge)return null;
+      const user=this.user(challenge.user_id);
+      if(challenge.expires<Date.now()||challenge.attempts>=5||!user?.active||!user.verified||!user.mfa_enabled||digest(user.password)!==challenge.password_hash){this.db.prepare('DELETE FROM login_factors WHERE hash=?').run(hash);return null;}
+      this.db.prepare('UPDATE login_factors SET attempts=attempts+1 WHERE hash=?').run(hash);
+      if(!this.factor(user,otp))return null;
+      this.db.prepare('DELETE FROM login_factors WHERE hash=?').run(hash);
+      this.store.audit(user.id,'session.login',user.id);return this.issue(user,true);
+    });
+  }
   enroll(user) { if(user.mfa_enabled)throw Error('MFA already enabled');const secret=base32(randomBytes(20));this.db.prepare('UPDATE users SET mfa_secret=?,mfa_step=-1 WHERE id=?').run(this.encrypt(secret),user.id);return secret; }
   consumeOtp(user,code) { if(!/^\d{6}$/.test(code||'')||!user.mfa_secret)return false;const secret=this.decrypt(user.mfa_secret),now=Math.floor(Date.now()/30000);for(const step of [now-1,now,now+1])if(step>user.mfa_step&&totp(secret,step)===code){return this.db.prepare('UPDATE users SET mfa_step=? WHERE id=? AND mfa_step<?').run(step,user.id,step).changes===1;}return false; }
   confirmMfa(session,code) {return this.store.transaction(()=>{const user=this.user(session.user.id);if(user.mfa_enabled||!this.consumeOtp(user,code))return null;this.db.prepare('UPDATE users SET mfa_enabled=1 WHERE id=?').run(user.id);this.db.prepare('DELETE FROM sessions WHERE user_id=?').run(user.id);const recoveryCodes=this.recoveryCodes(user);this.store.audit(user.id,'mfa.enabled',user.id);return {...this.issue(this.user(user.id),true),recoveryCodes};}); }

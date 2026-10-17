@@ -24,10 +24,17 @@ for(const role of ['customer','worker','admin']){
  for(const page of pages.filter(p=>p.Application.toLowerCase()===role)){hash='#'+page.ID;try{run('render()');checked++;}catch(e){throw Error(page.ID+': '+e.stack);}}
 }
 assert.equal(checked,86);
+run("enterpriseReport={environment:'test',registeredCustomers:2,paidOrders:0,grossKobo:0,walletKobo:0,refundedKobo:0,ledger:[],customers:[{id:'C',email:'<unsafe>@example.test',orders:0,units:0,spentKobo:0}],productsSold:[],sales:[],collections:[],movements:[]}");
+const records=run('enterpriseReporting()');assert(records.includes('Customer purchase history'));assert(records.includes('Goods received and supplier origin'));assert(!records.includes('<unsafe>'));run('enterpriseReport=null');
 run('connectedSetSession({});connectedGooglePublic={signInEnabled:false}');
 for(const [page,mode,label]of [['C01','login','Sign in with Google'],['C23','signup','Sign up with Google']]){hash='#'+page;const disabled=run('authAccessPage("customer","'+mode+'")');assert(disabled.includes(label));assert(/id="customer-google-auth"[^>]*disabled/.test(disabled));assert(disabled.indexOf('id="customer-google-auth"')>disabled.indexOf('<form'));assert(disabled.indexOf('id="customer-google-auth"')<disabled.indexOf('</form>'));run('connectedGooglePublic={signInEnabled:true}');const enabled=run('authAccessPage("customer","'+mode+'")');assert(!/id="customer-google-auth"[^>]*disabled/.test(enabled));assert(enabled.includes('type="button" id="customer-google-auth"'));run('connectedGooglePublic={signInEnabled:false}');}
 assert(!run('authAccessPage("worker")').includes('customer-google-auth'));assert(!run('authAccessPage("admin")').includes('customer-google-auth'));assert(!run('authAccessPage("customer","reset")').includes('customer-google-auth'));
 // Exercise the actual connected form handlers rather than only their rendered markup.
+for(const role of ['customer','worker','admin'])assert(!run(`authAccessPage('${role}')`).includes('id="auth-otp"'),'Initial login only asks for email/password');
+run(`connectedRequest=async()=>({factorRequired:true,challenge:'a'.repeat(64)});`);
+get('auth-email').value='factor@example.test';get('auth-password').value='LongPassword123';await run(`authLoginForm('worker')`);
+assert(get('app').innerHTML.includes('Verify and sign in'));assert(!get('app').innerHTML.includes('id="auth-password"'));assert.equal(run('connectedUser'),null);
+run('connectedLoginChallenge=null');
 run(`globalThis.authTestCalls=0;globalThis.authTestError='Invalid credentials, verification or authenticator code';connectedRequest=async action=>{authTestCalls++;throw Error(authTestError);};`);
 for(const role of ['customer','worker','admin']){
  get('auth-email').value='wrong@example.test';get('auth-password').value='WrongPassword123';

@@ -1,7 +1,7 @@
 /* The designed UI runs in an opaque sandbox. Only this host owns server cookies/CSRF. */
 (() => {
   const frame=document.getElementById('storefront');
-  const allowed=new Set(['me','login','logout','register','forgot','resend','consume','password','mfa/enroll','mfa/confirm','mfa/disable','mfa/recovery','sessions/revoke-others','profile']);
+  const allowed=new Set(['me','login','login-factor','logout','register','forgot','resend','consume','password','mfa/enroll','mfa/confirm','mfa/disable','mfa/recovery','sessions/revoke-others','profile']);
   const reads={'operations-config':'/api/admin/operations','operations-report':'/api/admin/reports','whatsapp-automation':'/api/admin/whatsapp/automation','whatsapp-public':'/api/whatsapp/config','account-profile':'/api/auth/profile',catalog:'/api/storefront/catalog',snapshot:'/api/business/snapshot',orders:'/api/orders',messages:'/api/notifications','notifications-page':'/api/notifications','notifications-push':'/api/notifications/push','notifications-admin':'/api/admin/notifications',users:'/api/admin/users',audit:'/api/admin/audit','paystack-config':'/api/admin/paystack','google-config':'/api/admin/google','google-public':'/api/google/public','openai-config':'/api/admin/openai','announcement-history':'/api/admin/messages'};
   const writes=new Set(['cart','address','saved','quote','quote-approve','checkout','supplier','staff','task','task-action','rate','catalog-draft','catalog-review','catalog-arrange','catalog-remove','support-message','shift','checkin','video-remove','referral-code','wallet-cancel','referral-attach','referral-config','promotion','promo-preview']);
   let captchaLoading;
@@ -45,6 +45,7 @@
       if(message.action==='fulfillment'){if(!['visit-consent','renew-code','availability','submit','review','dispatch','transit','return-request','return-review','cash','cash-review','settings'].includes(message.body?.operation))throw Error('Unknown fulfillment operation');route='/api/fulfillment/'+message.body.operation;}
       if(message.action==='draft-video'){if(!/^[a-f0-9]{48}$/.test(message.body?.id))throw Error('Invalid video');route='/api/catalog/video/'+message.body.id;}
       if(message.action==='draft-media'){if(!/^[a-f0-9]{48}$/.test(message.body?.id))throw Error('Invalid image');route='/api/catalog/media/'+message.body.id;}
+      if(message.action==='operations-report'){const q=new URLSearchParams();for(const key of ['start','end'])if(typeof message.body?.[key]==='string'&&message.body[key])q.set(key,message.body[key]);route+='?'+q.toString();}
       if(message.action==='notifications-page'&&message.body?.before){const before=Number(message.body.before);if(!Number.isSafeInteger(before)||before<1)throw Error('Invalid cursor');route+='?before='+before;}
       let body={...message.body};
       if(['logout','password','mfa/disable'].includes(message.action))await disableNotificationDevice().catch(()=>{});
@@ -76,7 +77,7 @@
       if(response.status===401&&!allowed.has(message.action)){csrf='';frame.contentWindow.postMessage({channel:'clc-session-expired'},'*');}
       if(!response.ok)throw Error(data.error||'Account request failed');
       for(const item of [data,...(Array.isArray(data.drafts)?data.drafts:[])])for(const source of [...(Array.isArray(item.sources)?item.sources:[]),...(Array.isArray(item.candidates)?item.candidates:[])])for(const value of [source.url,source.sourceUrl]){if(typeof value==='string'){try{const target=new URL(value);if(target.protocol==='https:'&&!target.username&&!target.password&&sourceUrls.size<1000)sourceUrls.add(target.href);}catch{}}}
-      if(typeof data.csrf==='string')csrf=data.csrf;if(['me','login','mfa/confirm','profile'].includes(message.action))currentUser=data.user||null;
+      if(typeof data.csrf==='string')csrf=data.csrf;if(['me','login','login-factor','mfa/confirm','profile'].includes(message.action))currentUser=data.user||null;
       if(message.action==='logout'||message.action==='password'||message.action==='mfa/disable'){csrf='';currentUser=null;sourceUrls.clear();whatsappDraftUrl='';}
       if(message.action==='whatsapp-link'){const target=new URL(data.url);if(target.origin!=='https://wa.me'||!/^\/[1-9][0-9]{7,14}$/.test(target.pathname)||target.username||target.password||target.port)throw Error('Invalid WhatsApp link');whatsappDraftUrl=target.href;}
       // The child does not receive CSRF/session tokens.

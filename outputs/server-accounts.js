@@ -23,7 +23,8 @@ authSession=role=>connectedUser?.role===role?connectedUser:null;
 authInitialize=async()=>{try{connectedSetSession(await connectedRequest('me'));authBooted=true;render();}catch(error){authBootError=error.message;authBooted=true;render();}};
 authLoginValues=async(role,email,password)=>{
   try{
-    const result=await connectedRequest('login',{email,password,otp:$('auth-otp')?.value||''});
+    const result=await connectedRequest('login',{email,password,stepwise:true});
+    if(result.factorRequired){connectedLoginChallenge={token:result.challenge,role};return {ok:false,factorRequired:true};}
     connectedSetSession(result);
     if(connectedUser.role!==role){const actualRole=connectedUser.role;await connectedRequest('logout');connectedSetSession({});return {ok:false,message:'Use the '+actualRole+' account sign-in page.'};}
     return {ok:true,user:connectedUser};
@@ -43,7 +44,19 @@ authPasswordForm=async role=>{
   try{await connectedRequest('password',{current:$('auth-current').value,password:$('auth-new').value});connectedSetSession({});go(AUTH_ROUTES[role].login);toast('Password changed. Sign in again.');}catch(error){status.textContent=error.message;}
 };
 // Keep authentication feedback visible and prevent duplicate requests.
-let connectedAuthBusy=false;
+let connectedAuthBusy=false,connectedLoginChallenge=null;
+function connectedShowFactor(){
+  const role=connectedLoginChallenge.role;
+  $('app').innerHTML=authPublicShell(heading('Two-factor authentication','Enter the code from your authenticator or a recovery code.')+card('Verify your sign-in',`<form onsubmit="event.preventDefault();connectedVerifyLogin()">${field('auth-otp','Authenticator or recovery code','','text','required autocomplete="one-time-code"')}<button type="submit" class="auth-submit">Verify and sign in</button><p id="auth-status" tabindex="-1" role="status" aria-live="polite"></p></form>`+button('Back to sign in',"connectedLoginChallenge=null;render()",'secondary')),PAGES.find(p=>p.ID===AUTH_ROUTES[role].login));
+}
+async function connectedVerifyLogin(){return connectedAuthSubmit(async()=>{
+  if(!connectedLoginChallenge)return;const {token,role}=connectedLoginChallenge;
+  const result=await connectedRequest('login-factor',{challenge:token,otp:$('auth-otp').value.trim()});
+  connectedLoginChallenge=null;connectedSetSession(result);
+  if(connectedUser.role!==role){await connectedRequest('logout');connectedSetSession({});render();toast('Use the correct account sign-in page.');return;}
+  await connectedRefresh();go(authReturnTo[role]||authScopeHome(role));delete authReturnTo[role];
+});}
+
 function connectedAuthStatus(message,error=false){
   const status=$('auth-status');if(!status)return;
   status.textContent=message;status.setAttribute('role',error?'alert':'status');
@@ -64,6 +77,7 @@ authLoginForm=async role=>connectedAuthSubmit(async()=>{
   connectedAuthStatus('Signing in…');
   const result=await authLoginValues(role,email,password);
   $('auth-password').value='';
+  if(result.factorRequired){connectedShowFactor();return;}
   if(!result.ok){connectedAuthStatus(result.message,true);return;}
   const target=authReturnTo[role]||authScopeHome(role);
   if(role==='customer')authRestoreSelection();delete authReturnTo[role];go(target);
@@ -86,7 +100,7 @@ authAccessPage=(role,mode='login')=>{
     .replace(/<p class="auth-local-note">[\s\S]*?<\/p>/,'<p class="auth-local-note">Accounts are verified by the server. Email verification is required.</p>')
     .replace('At least 10 characters, uppercase, lowercase and a number.','Use 12–128 characters.')
     .replace('<small>At least 10 characters, uppercase, lowercase and a number.</small>','<small>Use 12–128 characters.</small>');
-  if(mode==='login')html=html.replace('<div class="auth-form-links">',field('auth-otp','Authenticator or recovery code (if enabled)','','text','autocomplete="one-time-code"')+'<div class="auth-form-links">');
+
   if(mode==='reset'){
     html=html.replace(/<form[\s\S]*?<\/form>/,`<form onsubmit="event.preventDefault();authResetForm('${role}')">${field('auth-email','Account email','','email','required')}<button type="submit" class="auth-submit">Send reset email</button><p id="auth-status" role="status"></p></form>`);
   }
@@ -100,6 +114,7 @@ async function connectedEnroll(){try{const result=await connectedRequest('mfa/en
 async function connectedConfirm(){try{connectedSetSession(await connectedRequest('mfa/confirm',{otp:$('connected-otp').value}));render();}catch(error){toast(error.message);}}
 const connectedRenderBase=render;
 render=()=>{
+  if(connectedLoginChallenge){connectedShowFactor();return;}
   if(connectedMfa&&connectedUser?.role==='admin'){
     const page=PAGES.find(p=>p.ID==='A41');
     $('app').innerHTML=authPublicShell(heading('Secure your administrator account','Add the secret to your authenticator, then enter its current code.')+card('Authenticator setup',field('connected-password','Current password','','password')+button('Generate authenticator secret','connectedEnroll()')+'<p id="connected-secret"></p><p id="connected-uri"></p>'+field('connected-otp','Authenticator code','','text')+button('Confirm authenticator','connectedConfirm()')),page);return;
