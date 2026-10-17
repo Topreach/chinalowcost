@@ -762,7 +762,7 @@ authLoginValues=async(role,email,password)=>{
     connectedSetSession(result);
     if(connectedUser.role!==role){const actualRole=connectedUser.role;await connectedRequest('logout');connectedSetSession({});return {ok:false,message:'Use the '+actualRole+' account sign-in page.'};}
     return {ok:true,user:connectedUser};
-  }catch(error){return {ok:false,message:error.message};}
+  }catch(error){return {ok:false,message:error.message==='Invalid credentials, verification or authenticator code'?'Unable to sign in. Check your email and password, verify your email, and enter a valid authenticator or recovery code if two-factor authentication is enabled.':error.message};}
 };
 authLogout=async role=>{try{await connectedRequest('logout');connectedSetSession({});go(AUTH_ROUTES[role].login);}catch(error){toast(error.message);}};
 authSignupForm=async role=>{
@@ -777,6 +777,43 @@ authPasswordForm=async role=>{
   if($('auth-new').value!==$('auth-confirm').value){status.textContent='Passwords do not match.';return;}
   try{await connectedRequest('password',{current:$('auth-current').value,password:$('auth-new').value});connectedSetSession({});go(AUTH_ROUTES[role].login);toast('Password changed. Sign in again.');}catch(error){status.textContent=error.message;}
 };
+// Keep authentication feedback visible and prevent duplicate requests.
+let connectedAuthBusy=false;
+function connectedAuthStatus(message,error=false){
+  const status=$('auth-status');if(!status)return;
+  status.textContent=message;status.setAttribute('role',error?'alert':'status');
+  status.setAttribute('aria-live',error?'assertive':'polite');
+  if(error){status.focus();toast(message);}
+}
+async function connectedAuthSubmit(work){
+  if(connectedAuthBusy)return;
+  connectedAuthBusy=true;
+  const submit=document.querySelectorAll('.auth-submit[type="submit"]');
+  submit.forEach(button=>{button.disabled=true;});
+  try{await work();}catch(error){connectedAuthStatus(error.message||'Request failed. Please try again.',true);}
+  finally{connectedAuthBusy=false;submit.forEach(button=>{button.disabled=false;});}
+}
+authLoginForm=async role=>connectedAuthSubmit(async()=>{
+  const email=$('auth-email').value.trim(),password=$('auth-password').value;
+  if(!/^\S+@\S+\.\S+$/.test(email)||!password){connectedAuthStatus('Enter a valid email address and your password.',true);return;}
+  connectedAuthStatus('Signing in…');
+  const result=await authLoginValues(role,email,password);
+  $('auth-password').value='';
+  if(!result.ok){connectedAuthStatus(result.message,true);return;}
+  const target=authReturnTo[role]||authScopeHome(role);
+  if(role==='customer')authRestoreSelection();delete authReturnTo[role];go(target);
+});
+authSignupForm=async role=>connectedAuthSubmit(async()=>{
+  if(role!=='customer'){connectedAuthStatus('Staff accounts are issued by an administrator.',true);return;}
+  const name=$('auth-name').value.trim(),email=$('auth-email').value.trim(),password=$('auth-password').value;
+  if(!name||!/^\S+@\S+\.\S+$/.test(email)){connectedAuthStatus('Enter your name and a valid email address.',true);return;}
+  if(password.length<12||password.length>128){connectedAuthStatus('Use a password with 12–128 characters.',true);return;}
+  if(password!==$('auth-confirm').value){connectedAuthStatus('Passwords do not match.',true);return;}
+  connectedAuthStatus('Creating your account…');
+  const result=await connectedRequest('register',{name,email,password,referralCode:$('signup-referral-code')?.value||''});
+  $('auth-password').value='';$('auth-confirm').value='';
+  connectedAuthStatus(result.message+' Check your inbox and spam folder for the verification link before signing in.');
+});
 const connectedAccessBase=authAccessPage;
 authAccessPage=(role,mode='login')=>{
   let html=connectedAccessBase(role,mode)
@@ -788,7 +825,7 @@ authAccessPage=(role,mode='login')=>{
   if(mode==='reset'){
     html=html.replace(/<form[\s\S]*?<\/form>/,`<form onsubmit="event.preventDefault();authResetForm('${role}')">${field('auth-email','Account email','','email','required')}<button type="submit" class="auth-submit">Send reset email</button><p id="auth-status" role="status"></p></form>`);
   }
-  return html;
+  return html.replace('id="auth-status"','id="auth-status" tabindex="-1" aria-live="polite" aria-atomic="true"');
 };
 authFillDemo=()=>toast('Demo accounts do not grant server access.');
 authCreateInvitation=()=>toast('Server staff invitations are managed by an authorized administrator.');

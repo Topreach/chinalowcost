@@ -27,6 +27,18 @@ assert.equal(checked,86);
 run('connectedSetSession({});connectedGooglePublic={signInEnabled:false}');
 for(const [page,mode,label]of [['C01','login','Sign in with Google'],['C23','signup','Sign up with Google']]){hash='#'+page;const disabled=run('authAccessPage("customer","'+mode+'")');assert(disabled.includes(label));assert(/id="customer-google-auth"[^>]*disabled/.test(disabled));assert(disabled.indexOf('id="customer-google-auth"')>disabled.indexOf('<form'));assert(disabled.indexOf('id="customer-google-auth"')<disabled.indexOf('</form>'));run('connectedGooglePublic={signInEnabled:true}');const enabled=run('authAccessPage("customer","'+mode+'")');assert(!/id="customer-google-auth"[^>]*disabled/.test(enabled));assert(enabled.includes('type="button" id="customer-google-auth"'));run('connectedGooglePublic={signInEnabled:false}');}
 assert(!run('authAccessPage("worker")').includes('customer-google-auth'));assert(!run('authAccessPage("admin")').includes('customer-google-auth'));assert(!run('authAccessPage("customer","reset")').includes('customer-google-auth'));
+// Exercise the actual connected form handlers rather than only their rendered markup.
+run(`globalThis.authTestCalls=0;globalThis.authTestError='Invalid credentials, verification or authenticator code';connectedRequest=async action=>{authTestCalls++;throw Error(authTestError);};`);
+for(const role of ['customer','worker','admin']){
+ get('auth-email').value='wrong@example.test';get('auth-password').value='WrongPassword123';
+ await run(`authLoginForm('${role}')`);
+ assert.match(get('auth-status').textContent,/Check your email and password/);
+ assert.equal(get('auth-password').value,'');assert.equal(run('connectedAuthBusy'),false);
+}
+get('auth-name').value='Customer';get('auth-email').value='customer@example.test';get('auth-password').value='short';get('auth-confirm').value='short';
+const prior=run('authTestCalls');await run(`authSignupForm('customer')`);assert.match(get('auth-status').textContent,/12–128/);assert.equal(run('authTestCalls'),prior);
+get('auth-password').value='LongPassword123';get('auth-confirm').value='DifferentPassword123';await run(`authSignupForm('customer')`);assert.match(get('auth-status').textContent,/do not match/);
+get('auth-confirm').value='LongPassword123';run(`authTestError='Email is not configured'`);await run(`authSignupForm('customer')`);assert.equal(get('auth-status').textContent,'Email is not configured');assert.equal(run('connectedAuthBusy'),false);
 
 run(`connectedSetSession({user:{id:'customer',email:'customer@example.test',role:'customer'}});connectedHydrate({profile:{address:{state:'Lagos',town:'Ikeja'},addresses:[],saved:[]},cart:{revision:0,lines:[],priced:[],issues:[],goodsKobo:0},staff:[],tasks:[],quotes:[],drafts:[]},[]);`);
 hash='#C02';run('connectedOpenChatWidget()');assert(get('app').innerHTML.includes('id="clc-chat-panel"'));hash='#C18';run('render()');assert.equal([...get('app').innerHTML.matchAll(/id="message-input"/g)].length,1);assert(!get('app').innerHTML.includes('id="clc-chat-panel"'));run('connectedCloseChatWidget()');
