@@ -16,4 +16,4 @@ Do not call the complete application perfect or fully production-ready. Importan
 - Stronger, complete Admin data scoping across all legacy endpoints still needs dedicated authorization review. Initial scope controls are not a completed permission audit.
 - Backup restoration/decryption tooling and a real off-server restore drill still need completion. No backup job or server change has been activated by these local edits.
 
-GitHub publishing and staged releases are being prepared. Production data and credentials are excluded from source control. No real provider transaction or remote server deployment was performed.
+Source publishing, CI workflows and staged release tooling are implemented. GitHub Actions availability, environment secrets and one-time server setup must be configured separately. Production data and credentials are excluded from source control. No real provider transaction or remote server deployment was performed.

@@ -64,6 +64,8 @@ This key can invoke only the validated fixed deployment command. Keep your norma
 
 Open GitHub > Actions > Release to Contabo > Run workflow, selecting main. The workflow tests the exact commit, then calls the fixed server helper over strict-host-verified SSH. There is no deployment on every ordinary push. No production environment secrets or SSH access have been configured by the local file changes alone.
 
+If GitHub-hosted Actions cannot run because of an account restriction, do not interpret that as a passing CI check. The SSH release helper above independently runs build, tests and snapshot preflight, so it remains available for an explicitly reviewed manual release. Resolve the GitHub restriction before using the Actions release button.
+
 ## After each release
 
 Verify sign-in for each role, an approved quotation and test payment, inventory behavior, notification preferences and one worker task. Confirm the revision file, service status, private file permissions and public HTTPS behavior. Monitor logs without printing tokens or complete provider responses. Keep encrypted off-server backups and perform a restore drill; pre-release snapshots on the VPS are not disaster recovery.
