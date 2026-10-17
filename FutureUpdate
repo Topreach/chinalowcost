@@ -1,0 +1,55 @@
+Yes—a **database backup was created before the update**, at:
+
+```text
+/root/chinalowcost-release-backups/20261017T165109Z-f8679a3e3967c4c5f23c7545de5d873821e3a2d3/app.sqlite
+```
+
+This is a pre-update database snapshot on the same VPS. **Automatic daily backups and off-server copies are not activated yet**, and this snapshot does not include uploaded product files.
+
+For future updates:
+
+**1. In Windows PowerShell, test and push your changes:**
+
+```powershell
+cd C:\Users\DELL\Chinalowcost\ChinaLowCost
+
+npm run build
+npm test
+```
+
+If both succeed:
+
+```powershell
+git add .
+git commit -m "Describe your changes"
+git push origin main
+
+git rev-parse HEAD
+```
+
+Copy the full commit SHA printed by the last command.
+
+**2. Log into Contabo:**
+
+```powershell
+ssh -p 2222 root@173.249.34.3
+```
+
+**3. Deploy that commit:**
+
+```bash
+bash /usr/local/sbin/chinalowcost-release YOUR_FULL_COMMIT_SHA
+```
+
+The release script installs dependencies, builds, runs tests, checks startup against a database copy, creates a fresh database backup, and switches versions during a short maintenance window. Failed initial startup triggers rollback.
+
+**4. Verify:**
+
+```bash
+systemctl status chinalowcost --no-pager
+curl --fail --silent --show-error http://127.0.0.1:3100/readyz
+echo
+cat /opt/chinalowcost/current-revision
+```
+
+GitHub pushes alone do **not** update Contabo. Avoid extracting updates over the running application or changing `.env` during routine code updates.
