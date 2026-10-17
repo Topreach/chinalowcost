@@ -1,0 +1,15 @@
+[Unit]
+Description=ChinaLowCost encrypted complete backup
+After=network.target
+[Service]
+Type=oneshot
+User=chinalowcost
+Group=chinalowcost
+WorkingDirectory=/opt/chinalowcost
+ExecStart=/usr/bin/node --env-file=/opt/chinalowcost/.env /opt/chinalowcost/backend/backup-encrypted.cjs
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/opt/chinalowcost/data/backups

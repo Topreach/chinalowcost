@@ -1,0 +1,54 @@
+%% ChinaLowCost editable Mermaid source — each block is a separate diagram.
+%% ORDER
+stateDiagram-v2
+ [*] --> DRAFT
+ DRAFT --> SUBMITTED: customer confirms
+ SUBMITTED --> AVAILABILITY_CONFIRMED: staff verifies stock and final total
+ AVAILABILITY_CONFIRMED --> CONFIRMED: verified payment or approved COD
+ AVAILABILITY_CONFIRMED --> EXPIRED: reservation/payment window ends
+ SUBMITTED --> EXPIRED: confirmation window ends
+ CONFIRMED --> COMPLETED: all quantities resolved and required reconciliation complete
+ SUBMITTED --> CANCELLATION_REQUESTED
+ AVAILABILITY_CONFIRMED --> CANCELLATION_REQUESTED
+ CONFIRMED --> CANCELLATION_REQUESTED
+ CANCELLATION_REQUESTED --> CANCELED: review approved; refund tracked separately
+ CANCELLATION_REQUESTED --> CONFIRMED: denied if prior state was confirmed
+ CANCELLATION_REQUESTED --> SUBMITTED: denied if prior state was submitted
+ CANCELLATION_REQUESTED --> AVAILABILITY_CONFIRMED: denied if prior state was availability confirmed
+
+%% PAYMENT ATTEMPT — render as separate diagram
+stateDiagram-v2
+ [*] --> CREATED
+ CREATED --> PENDING
+ PENDING --> SUCCEEDED: verified provider event
+ PENDING --> FAILED: verified failure
+ PENDING --> EXPIRED: verified expiry
+ EXPIRED --> SUCCEEDED: late verified settlement; exception review
+
+%% SHIPMENT — render as separate diagram
+stateDiagram-v2
+ [*] --> PLANNED
+ PLANNED --> READY_FOR_DISPATCH
+ READY_FOR_DISPATCH --> DISPATCHED
+ DISPATCHED --> OUT_FOR_DELIVERY
+ OUT_FOR_DELIVERY --> DELIVERED: authorized proof
+ OUT_FOR_DELIVERY --> DELIVERY_FAILED
+ DELIVERY_FAILED --> RESCHEDULED
+ RESCHEDULED --> OUT_FOR_DELIVERY
+ DELIVERY_FAILED --> RETURN_TO_BASE
+ RETURN_TO_BASE --> RECEIVED_BACK
+ DISPATCHED --> LOST
+ OUT_FOR_DELIVERY --> LOST
+
+%% REFUND — render as separate diagram
+stateDiagram-v2
+ [*] --> REQUESTED
+ REQUESTED --> APPROVED: independent finance approval
+ REQUESTED --> REJECTED
+ APPROVED --> SUBMITTED: reserve amount; idempotent request
+ SUBMITTED --> SUCCEEDED: verified settlement
+ SUBMITTED --> FAILED: verified failure
+ SUBMITTED --> MANUAL_REVIEW: uncertain result
+ FAILED --> SUBMITTED: authorized retry
+ MANUAL_REVIEW --> SUCCEEDED: reconciled settlement
+ MANUAL_REVIEW --> FAILED: reconciled failure

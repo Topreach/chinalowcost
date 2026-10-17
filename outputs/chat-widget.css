@@ -1,0 +1,7 @@
+.clc-chat-launcher{position:fixed;right:20px;bottom:calc(20px + env(safe-area-inset-bottom));z-index:9000;display:flex;align-items:center;gap:10px;border:0;border-radius:999px;padding:15px 20px;background:#145847;color:#fff;box-shadow:0 6px 24px #0003;font-weight:700;cursor:pointer}
+.clc-chat-launcher svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.8}
+.clc-chat-launcher:focus-visible,.clc-chat-close:focus-visible{outline:3px solid #b9df5c;outline-offset:4px}
+.clc-chat-panel{position:fixed;right:20px;bottom:calc(88px + env(safe-area-inset-bottom));z-index:8999;width:min(410px,calc(100vw - 32px));max-height:calc(100dvh - 116px);overflow:auto;overscroll-behavior:contain;border:1px solid #d8e2da;border-radius:18px;background:#f8faf7;box-shadow:0 12px 45px #0003;padding:16px}
+.clc-chat-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.clc-chat-panel .card{padding:16px;margin:12px 0 0}.clc-chat-panel .products{grid-template-columns:1fr}.clc-chat-panel .product-art{height:130px}.clc-chat-panel .message{overflow-wrap:anywhere}.clc-chat-panel textarea{min-height:85px}.clc-chat-close{padding:7px 12px;flex-shrink:0}
+@media(max-width:600px){.clc-chat-launcher{right:12px;bottom:calc(12px + env(safe-area-inset-bottom));padding:13px 17px}.clc-chat-panel{right:12px;bottom:calc(77px + env(safe-area-inset-bottom));width:calc(100vw - 24px);max-height:calc(100dvh - 100px)}}

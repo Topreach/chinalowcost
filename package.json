@@ -1,0 +1,25 @@
+{
+  "name": "chinalowcost-prototype",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ChinaLowCost editable customer, worker and admin prototype",
+  "scripts": {
+    "start": "node --env-file=.env backend/server.cjs",
+    "order:approve": "node --env-file=.env backend/approve-order.cjs",
+    "account:create": "node --env-file=.env backend/create-account.cjs",
+    "backup": "node --env-file=.env backend/backup.cjs",
+    "backup:check": "node --env-file=.env backend/backup.cjs --check",
+    "test:backend": "node --test backend/test/*.test.cjs",
+    "build": "node work/build-prototype.cjs && node work/build-storefront.cjs",
+    "test": "node work/check-connected-prototype.cjs && node work/check-accounts.cjs && node work/check-server-connected.cjs && node --test backend/test/*.test.cjs",
+    "backup:encrypted": "node --env-file=.env backend/backup-encrypted.cjs",
+    "backup:keygen": "node backend/backup-encrypted.cjs --keygen"
+  },
+  "dependencies": {
+    "nodemailer": "^10.1.1",
+    "web-push": "^3.6.7"
+  },
+  "engines": {
+    "node": ">=24.14.0"
+  }
+}

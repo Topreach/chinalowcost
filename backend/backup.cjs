@@ -1,0 +1,7 @@
+const fs=require('node:fs');
+const path=require('node:path');
+const {randomBytes}=require('node:crypto');
+const {DatabaseSync,backup}=require('node:sqlite');
+const {config}=require('./config.cjs');
+function check(file){const db=new DatabaseSync(file,{readOnly:true});try{const result=db.prepare('PRAGMA quick_check').get();if(result.quick_check!=='ok')throw Error('Database integrity check failed');if(!db.prepare("SELECT name FROM sqlite_master WHERE name='users'").get())throw Error('Not a ChinaLowCost database');}finally{db.close();}}
+(async()=>{if(process.argv[2]==='--check'){const target=process.argv[3];if(!target||!fs.existsSync(target))throw Error('Provide an existing backup path');check(target);console.log('Backup integrity check passed.');return;}const settings=config();if(!fs.existsSync(settings.file))throw Error('Database does not exist yet');const dir=path.join(path.dirname(settings.file),'backups');fs.mkdirSync(dir,{recursive:true});const destination=path.join(dir,'app-'+new Date().toISOString().replace(/[:.]/g,'-')+'-'+randomBytes(4).toString('hex')+'.sqlite');const db=new DatabaseSync(settings.file);try{await backup(db,destination);}finally{db.close();}check(destination);if(!settings.encryptionKeyHex&&fs.existsSync(settings.file+'.key'))fs.copyFileSync(settings.file+'.key',destination+'.key',fs.constants.COPYFILE_EXCL);console.log('Verified database backup: '+destination+'\nKeep private files and the encryption key in your protected backup plan.');})().catch(e=>{console.error(e.message);process.exitCode=1;});

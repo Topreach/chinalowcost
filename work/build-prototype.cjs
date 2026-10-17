@@ -1,0 +1,15 @@
+const fs = require('fs');
+const path = require('path');
+const out = path.resolve('outputs');
+const old = fs.readFileSync(path.join(out,'Screen-Blueprint.html'),'utf8');
+const svg = old.match(/<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg"[\s\S]*?<\/svg>/)?.[0] || '';
+const rows = fs.readFileSync(path.join(out,'Screen-Inventory.csv'),'utf8').trim().split(/\r?\n/);
+const headers = rows.shift().split(',');
+const pages = rows.map(row => Object.fromEntries(row.split(',').map((value,i)=>[headers[i],value])));
+if(pages.length!==86 || new Set(pages.map(p=>p.ID)).size!==86)throw Error('Screen register mismatch');
+const css=fs.readFileSync(path.join(out,'prototype.css'),'utf8');
+const js=['prototype.js','commerce.js','catalog.js','navigation.js','operations.js','accounts.js','payments.js'].map(file=>fs.readFileSync(path.join(out,file),'utf8')).join('\n');
+const html=`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#145847"><title>ChinaLowCost · Connected prototype</title><style>${css}</style></head><body><a class="skip" href="#content">Skip to content</a>${svg}<div id="app"></div><dialog id="modal" aria-labelledby="modal-title"></dialog><div id="toast" role="status" aria-live="polite"></div><script>const PAGES=${JSON.stringify(pages)};</script><script>${js}</script></body></html>`;
+fs.writeFileSync(path.join(out,'Screen-Blueprint.html'),html);
+fs.writeFileSync(path.join(out,'Prototype-Page-Map.json'),JSON.stringify(pages.map(p=>({...p,Route:'#'+p.ID})),null,2));
+console.log('Built self-contained connected prototype with '+pages.length+' routes.');

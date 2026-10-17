@@ -1,0 +1,3 @@
+/* No application pages or account data are cached. */
+self.addEventListener('push',event=>{event.waitUntil(self.registration.showNotification('ChinaLowCost',{body:'You have a new account notification.',tag:'clc-account-update',data:{url:'/application'}}));});
+self.addEventListener('notificationclick',event=>{event.notification.close();event.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(async windows=>{const found=windows.find(w=>new URL(w.url).origin===self.location.origin&&new URL(w.url).pathname==='/application');if(found)return found.focus();return clients.openWindow('/application');}));});

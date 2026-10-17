@@ -1,0 +1,11 @@
+const fs=require('node:fs');
+const path=require('node:path');
+const {randomBytes}=require('node:crypto');
+class HttpError extends Error {constructor(status,message){super(message);this.status=status;}}
+function encryptionKey(file,provided){if(provided){if(!/^[a-f0-9]{64}$/i.test(provided))throw Error('APP_ENCRYPTION_KEY must contain 64 hexadecimal characters');return Buffer.from(provided,'hex');}const keyFile=file+'.key';fs.mkdirSync(path.dirname(keyFile),{recursive:true});try{fs.writeFileSync(keyFile,randomBytes(32),{flag:'wx',mode:0o600});}catch(e){if(e.code!=='EEXIST')throw e;}const key=fs.readFileSync(keyFile);if(key.length!==32)throw Error('Invalid local encryption key');return key;}
+function headers(res,settings){res.setHeader('Cache-Control','no-store');res.setHeader('Referrer-Policy','no-referrer');res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('X-Frame-Options','DENY');res.setHeader('Permissions-Policy','camera=(), microphone=(), geolocation=()');res.setHeader('Cross-Origin-Resource-Policy','same-origin');res.setHeader('Content-Security-Policy',"default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' blob:; base-uri 'none'; frame-ancestors 'none'; form-action 'self'; object-src 'none'");if(settings.secure)res.setHeader('Strict-Transport-Security','max-age=31536000');}
+async function read(req,max=65536){if(Number(req.headers['content-length']||0)>max)throw new HttpError(413,'Request too large');const chunks=[];let size=0;for await(const chunk of req){size+=chunk.length;if(size>max)throw new HttpError(413,'Request too large');chunks.push(chunk);}return Buffer.concat(chunks);}
+function csrf(req,session){if(!session||req.headers['x-csrf-token']!==session.csrf)throw new HttpError(403,'Invalid security token');}
+function requireSession(session){if(!session)throw new HttpError(401,'Sign in required');return session.user;}
+function admin(session){const user=requireSession(session);if(user.role!=='admin'||!session.mfa||!user.mfa_enabled)throw new HttpError(403,'Administrator MFA required');return user;}
+module.exports={HttpError,encryptionKey,headers,read,csrf,requireSession,admin};

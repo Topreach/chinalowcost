@@ -1,0 +1,862 @@
+[
+  {
+    "ID": "C01",
+    "Application": "Customer",
+    "Screen": "Customer login",
+    "Primary action": "Sign in to customer account",
+    "Access": "Public",
+    "Key states": "Wrong credentials / account session / retry",
+    "MVP stage": "1",
+    "Route": "#C01"
+  },
+  {
+    "ID": "C02",
+    "Application": "Customer",
+    "Screen": "Home retail and wholesale",
+    "Primary action": "Select shopping mode",
+    "Access": "Public",
+    "Key states": "Loading / offline / empty",
+    "MVP stage": "1",
+    "Route": "#C02"
+  },
+  {
+    "ID": "C03",
+    "Application": "Customer",
+    "Screen": "Categories and product listing",
+    "Primary action": "Filter products",
+    "Access": "Public",
+    "Key states": "No results / stale stock",
+    "MVP stage": "1",
+    "Route": "#C03"
+  },
+  {
+    "ID": "C04",
+    "Application": "Customer",
+    "Screen": "Text search",
+    "Primary action": "Find product",
+    "Access": "Public",
+    "Key states": "No results / suggestions",
+    "MVP stage": "1",
+    "Route": "#C04"
+  },
+  {
+    "ID": "C05",
+    "Application": "Customer",
+    "Screen": "Photo search upload",
+    "Primary action": "Upload or capture photo",
+    "Access": "Public",
+    "Key states": "Permission denied / invalid media / processing",
+    "MVP stage": "3",
+    "Route": "#C05"
+  },
+  {
+    "ID": "C06",
+    "Application": "Customer",
+    "Screen": "Photo search matches",
+    "Primary action": "Choose similar product",
+    "Access": "Public",
+    "Key states": "Matches / no match / AI unavailable",
+    "MVP stage": "3",
+    "Route": "#C06"
+  },
+  {
+    "ID": "C07",
+    "Application": "Customer",
+    "Screen": "Product detail",
+    "Primary action": "Select variant and add quantity",
+    "Access": "Public",
+    "Key states": "Unavailable / invalid pack / stale availability",
+    "MVP stage": "1",
+    "Route": "#C07"
+  },
+  {
+    "ID": "C08",
+    "Application": "Customer",
+    "Screen": "Wholesale calculator",
+    "Primary action": "Calculate and request quote",
+    "Access": "Public",
+    "Key states": "MOQ / tier boundary / delivery unknown",
+    "MVP stage": "1",
+    "Route": "#C08"
+  },
+  {
+    "ID": "C09",
+    "Application": "Customer",
+    "Screen": "Quotation list and detail",
+    "Primary action": "Download PDF or accept version",
+    "Access": "Own customer",
+    "Key states": "Expired / superseded / approval pending",
+    "MVP stage": "1",
+    "Route": "#C09"
+  },
+  {
+    "ID": "C10",
+    "Application": "Customer",
+    "Screen": "Cart",
+    "Primary action": "Review priced items",
+    "Access": "Own customer or guest",
+    "Key states": "Price changed / item unavailable",
+    "MVP stage": "1",
+    "Route": "#C10"
+  },
+  {
+    "ID": "C11",
+    "Application": "Customer",
+    "Screen": "Address and delivery zone",
+    "Primary action": "Confirm location",
+    "Access": "Own customer",
+    "Key states": "Unsupported zone / invalid address",
+    "MVP stage": "1",
+    "Route": "#C11"
+  },
+  {
+    "ID": "C12",
+    "Application": "Customer",
+    "Screen": "Checkout review",
+    "Primary action": "Confirm final total and terms",
+    "Access": "Own customer",
+    "Key states": "Stock pending / changed quote / reservation expired",
+    "MVP stage": "1",
+    "Route": "#C12"
+  },
+  {
+    "ID": "C13",
+    "Application": "Customer",
+    "Screen": "Payment method and hosted handoff",
+    "Primary action": "Pay order",
+    "Access": "Own customer",
+    "Key states": "Pending / failed / verified / late payment",
+    "MVP stage": "1",
+    "Route": "#C13"
+  },
+  {
+    "ID": "C14",
+    "Application": "Customer",
+    "Screen": "Transfer and COD instructions",
+    "Primary action": "Submit reference or choose eligible COD",
+    "Access": "Own customer",
+    "Key states": "Verification pending / COD ineligible",
+    "MVP stage": "2",
+    "Route": "#C14"
+  },
+  {
+    "ID": "C15",
+    "Application": "Customer",
+    "Screen": "Order list and detail",
+    "Primary action": "Review order",
+    "Access": "Own customer",
+    "Key states": "Partial / canceled / refund pending",
+    "MVP stage": "1",
+    "Route": "#C15"
+  },
+  {
+    "ID": "C16",
+    "Application": "Customer",
+    "Screen": "Tracking and shipment detail",
+    "Primary action": "View milestones and delivery evidence",
+    "Access": "Own customer",
+    "Key states": "Split shipment / failed attempt / delayed",
+    "MVP stage": "2",
+    "Route": "#C16"
+  },
+  {
+    "ID": "C17",
+    "Application": "Customer",
+    "Screen": "Video feed and video detail",
+    "Primary action": "Shop linked products",
+    "Access": "Public",
+    "Key states": "Slow network / unavailable linked SKU",
+    "MVP stage": "3",
+    "Route": "#C17"
+  },
+  {
+    "ID": "C18",
+    "Application": "Customer",
+    "Screen": "Support and WhatsApp handoff",
+    "Primary action": "Contact support",
+    "Access": "Own customer",
+    "Key states": "Agent unavailable / message failed",
+    "MVP stage": "3",
+    "Route": "#C18"
+  },
+  {
+    "ID": "C19",
+    "Application": "Customer",
+    "Screen": "Return request and case detail",
+    "Primary action": "Request return with evidence",
+    "Access": "Own delivered items",
+    "Key states": "Ineligible / inspection pending / refund processing",
+    "MVP stage": "2",
+    "Route": "#C19"
+  },
+  {
+    "ID": "C20",
+    "Application": "Customer",
+    "Screen": "Profile addresses and preferences",
+    "Primary action": "Manage details and consent",
+    "Access": "Own customer",
+    "Key states": "Validation / opt-out / deletion request",
+    "MVP stage": "1",
+    "Route": "#C20"
+  },
+  {
+    "ID": "C21",
+    "Application": "Customer",
+    "Screen": "Receipt and refund history",
+    "Primary action": "Download financial record",
+    "Access": "Own customer",
+    "Key states": "Pending settlement / partial refund",
+    "MVP stage": "2",
+    "Route": "#C21"
+  },
+  {
+    "ID": "C22",
+    "Application": "Customer",
+    "Screen": "Offers and promo eligibility",
+    "Primary action": "Apply eligible promotion",
+    "Access": "Own customer",
+    "Key states": "Expired / minimum not met / wrong mode / cap reached",
+    "MVP stage": "1",
+    "Route": "#C22"
+  },
+  {
+    "ID": "C23",
+    "Application": "Customer",
+    "Screen": "Customer signup",
+    "Primary action": "Create customer account",
+    "Access": "Public",
+    "Key states": "Duplicate email / invalid password / recovery code",
+    "MVP stage": "1",
+    "Route": "#C23"
+  },
+  {
+    "ID": "C24",
+    "Application": "Customer",
+    "Screen": "Customer password recovery",
+    "Primary action": "Reset own password",
+    "Access": "Public",
+    "Key states": "Invalid recovery code / expired session",
+    "MVP stage": "1",
+    "Route": "#C24"
+  },
+  {
+    "ID": "C25",
+    "Application": "Customer",
+    "Screen": "Customer account security",
+    "Primary action": "Change password or sign out",
+    "Access": "Own authenticated customer",
+    "Key states": "Wrong current password / mismatch / revoked session",
+    "MVP stage": "1",
+    "Route": "#C25"
+  },
+  {
+    "ID": "W01",
+    "Application": "Worker",
+    "Screen": "Sign in and activation status",
+    "Primary action": "Authenticate",
+    "Access": "Staff",
+    "Key states": "Pending approval / suspended / MFA",
+    "MVP stage": "1",
+    "Route": "#W01"
+  },
+  {
+    "ID": "W02",
+    "Application": "Worker",
+    "Screen": "Assigned tasks and task detail",
+    "Primary action": "Start assigned task",
+    "Access": "Scoped staff",
+    "Key states": "Overdue / reassigned / offline",
+    "MVP stage": "2",
+    "Route": "#W02"
+  },
+  {
+    "ID": "W03",
+    "Application": "Worker",
+    "Screen": "Supplier visit detail",
+    "Primary action": "Record visit and consent",
+    "Access": "Assigned catalog staff",
+    "Key states": "No consent / canceled visit",
+    "MVP stage": "2",
+    "Route": "#W03"
+  },
+  {
+    "ID": "W04",
+    "Application": "Worker",
+    "Screen": "Capture photos and videos",
+    "Primary action": "Upload approved capture",
+    "Access": "Assigned catalog staff",
+    "Key states": "Permission denied / retry / offline draft",
+    "MVP stage": "2",
+    "Route": "#W04"
+  },
+  {
+    "ID": "W05",
+    "Application": "Worker",
+    "Screen": "AI catalog draft review",
+    "Primary action": "Verify suggested attributes",
+    "Access": "Assigned catalog staff",
+    "Key states": "Uncertain fields / extraction failed",
+    "MVP stage": "3",
+    "Route": "#W05"
+  },
+  {
+    "ID": "W06",
+    "Application": "Worker",
+    "Screen": "Manual catalog draft and submission",
+    "Primary action": "Submit draft",
+    "Access": "Assigned catalog staff",
+    "Key states": "Missing MOQ / invalid price / rejected",
+    "MVP stage": "1",
+    "Route": "#W06"
+  },
+  {
+    "ID": "W07",
+    "Application": "Worker",
+    "Screen": "Availability confirmation",
+    "Primary action": "Record supplier confirmation",
+    "Access": "Assigned procurement staff",
+    "Key states": "Stale / unavailable / quantity change",
+    "MVP stage": "2",
+    "Route": "#W07"
+  },
+  {
+    "ID": "W08",
+    "Application": "Worker",
+    "Screen": "Pickup and purchase order detail",
+    "Primary action": "Confirm goods collected",
+    "Access": "Assigned procurement staff",
+    "Key states": "Partial pickup / supplier delay",
+    "MVP stage": "2",
+    "Route": "#W08"
+  },
+  {
+    "ID": "W09",
+    "Application": "Worker",
+    "Screen": "Inspection and discrepancy",
+    "Primary action": "Accept or reject units",
+    "Access": "Assigned procurement staff",
+    "Key states": "Damaged / wrong variant / short quantity",
+    "MVP stage": "2",
+    "Route": "#W09"
+  },
+  {
+    "ID": "W10",
+    "Application": "Worker",
+    "Screen": "Packing and dispatch",
+    "Primary action": "Confirm shipment handover",
+    "Access": "Assigned logistics staff",
+    "Key states": "Missing units / blocked dispatch",
+    "MVP stage": "2",
+    "Route": "#W10"
+  },
+  {
+    "ID": "W11",
+    "Application": "Worker",
+    "Screen": "Delivery tasks and directions",
+    "Primary action": "Start delivery",
+    "Access": "Assigned delivery staff",
+    "Key states": "Offline / failed attempt",
+    "MVP stage": "2",
+    "Route": "#W11"
+  },
+  {
+    "ID": "W12",
+    "Application": "Worker",
+    "Screen": "Delivery proof and OTP",
+    "Primary action": "Submit proof",
+    "Access": "Assigned delivery staff",
+    "Key states": "Invalid OTP / customer absent / exception approval",
+    "MVP stage": "2",
+    "Route": "#W12"
+  },
+  {
+    "ID": "W13",
+    "Application": "Worker",
+    "Screen": "Cash collection and handover",
+    "Primary action": "Record collected cash",
+    "Access": "Assigned delivery staff",
+    "Key states": "Discrepancy / awaiting finance",
+    "MVP stage": "2",
+    "Route": "#W13"
+  },
+  {
+    "ID": "W14",
+    "Application": "Worker",
+    "Screen": "Return collection",
+    "Primary action": "Record returned units",
+    "Access": "Assigned logistics staff",
+    "Key states": "Wrong item / incomplete collection",
+    "MVP stage": "2",
+    "Route": "#W14"
+  },
+  {
+    "ID": "W15",
+    "Application": "Worker",
+    "Screen": "Sync queue and profile",
+    "Primary action": "Retry drafts and view access",
+    "Access": "Active staff",
+    "Key states": "Sync conflict / session revoked",
+    "MVP stage": "2",
+    "Route": "#W15"
+  },
+  {
+    "ID": "W16",
+    "Application": "Worker",
+    "Screen": "Shift check-ins and own location",
+    "Primary action": "Share task check-in",
+    "Access": "Approved assigned worker",
+    "Key states": "Consent required / stale / off shift / permission denied",
+    "MVP stage": "2",
+    "Route": "#W16"
+  },
+  {
+    "ID": "W17",
+    "Application": "Worker",
+    "Screen": "Assigned order workspace",
+    "Primary action": "Review order and destination",
+    "Access": "Assigned active staff",
+    "Key states": "Transport unquoted / split order / revised destination",
+    "MVP stage": "2",
+    "Route": "#W17"
+  },
+  {
+    "ID": "W18",
+    "Application": "Worker",
+    "Screen": "Catalog draft library",
+    "Primary action": "Resume multi-product capture",
+    "Access": "Assigned catalog staff",
+    "Key states": "Incomplete images / corrections / pending review",
+    "MVP stage": "2",
+    "Route": "#W18"
+  },
+  {
+    "ID": "W19",
+    "Application": "Worker",
+    "Screen": "Worker login help",
+    "Primary action": "Get admin-issued login help",
+    "Access": "Public",
+    "Key states": "Account issued by admin / access removed",
+    "MVP stage": "1",
+    "Route": "#W19"
+  },
+  {
+    "ID": "W20",
+    "Application": "Worker",
+    "Screen": "Worker password recovery",
+    "Primary action": "Reset worker password",
+    "Access": "Public",
+    "Key states": "Invalid recovery code / approval still required",
+    "MVP stage": "1",
+    "Route": "#W20"
+  },
+  {
+    "ID": "W21",
+    "Application": "Worker",
+    "Screen": "Worker account security",
+    "Primary action": "Change password and end session",
+    "Access": "Own authenticated worker",
+    "Key states": "Wrong password / suspended staff / expired session",
+    "MVP stage": "1",
+    "Route": "#W21"
+  },
+  {
+    "ID": "A01",
+    "Application": "Admin",
+    "Screen": "Overview and exception queues",
+    "Primary action": "Resolve urgent tasks",
+    "Access": "Scoped management",
+    "Key states": "No data / overdue / integration failure",
+    "MVP stage": "1",
+    "Route": "#A01"
+  },
+  {
+    "ID": "A02",
+    "Application": "Admin",
+    "Screen": "Staff applications and activation",
+    "Primary action": "Approve staff",
+    "Access": "Independent manager",
+    "Key states": "Pending / rejected / suspended",
+    "MVP stage": "1",
+    "Route": "#A02"
+  },
+  {
+    "ID": "A03",
+    "Application": "Admin",
+    "Screen": "Roles permissions and assignments",
+    "Primary action": "Grant scoped access",
+    "Access": "Authorized admin with approval",
+    "Key states": "Conflict / expired approval",
+    "MVP stage": "1",
+    "Route": "#A03"
+  },
+  {
+    "ID": "A04",
+    "Application": "Admin",
+    "Screen": "Supplier list onboarding and detail",
+    "Primary action": "Activate verified supplier",
+    "Access": "Operations manager",
+    "Key states": "Incomplete verification / on hold",
+    "MVP stage": "1",
+    "Route": "#A04"
+  },
+  {
+    "ID": "A05",
+    "Application": "Admin",
+    "Screen": "Supplier banking and terms",
+    "Primary action": "Verify financial details",
+    "Access": "Finance with independent approval",
+    "Key states": "Changed bank / unverified / restricted",
+    "MVP stage": "2",
+    "Route": "#A05"
+  },
+  {
+    "ID": "A06",
+    "Application": "Admin",
+    "Screen": "Visits and task assignments",
+    "Primary action": "Schedule field work",
+    "Access": "Operations manager",
+    "Key states": "Overdue / reassignment",
+    "MVP stage": "2",
+    "Route": "#A06"
+  },
+  {
+    "ID": "A07",
+    "Application": "Admin",
+    "Screen": "Catalog and SKU editor",
+    "Primary action": "Manage product variants",
+    "Access": "Catalog staff",
+    "Key states": "Duplicate / draft / rejected",
+    "MVP stage": "1",
+    "Route": "#A07"
+  },
+  {
+    "ID": "A08",
+    "Application": "Admin",
+    "Screen": "Catalog approval and publication",
+    "Primary action": "Approve version",
+    "Access": "Independent catalog reviewer",
+    "Key states": "Missing evidence / own request blocked",
+    "MVP stage": "1",
+    "Route": "#A08"
+  },
+  {
+    "ID": "A09",
+    "Application": "Admin",
+    "Screen": "Price books and tiers",
+    "Primary action": "Set approved prices",
+    "Access": "Authorized pricing staff",
+    "Key states": "Overlapping tiers / margin exception",
+    "MVP stage": "1",
+    "Route": "#A09"
+  },
+  {
+    "ID": "A10",
+    "Application": "Admin",
+    "Screen": "Availability and reservations",
+    "Primary action": "Resolve stock",
+    "Access": "Operations staff",
+    "Key states": "Stale / expired / oversubscribed",
+    "MVP stage": "2",
+    "Route": "#A10"
+  },
+  {
+    "ID": "A11",
+    "Application": "Admin",
+    "Screen": "Quote queue and editor",
+    "Primary action": "Issue negotiated quote",
+    "Access": "Sales with approval policy",
+    "Key states": "Expired / superseded / discount approval",
+    "MVP stage": "1",
+    "Route": "#A11"
+  },
+  {
+    "ID": "A12",
+    "Application": "Admin",
+    "Screen": "Orders and order workspace",
+    "Primary action": "Confirm and manage order",
+    "Access": "Scoped operations",
+    "Key states": "Unpaid / exception / partial / canceled",
+    "MVP stage": "1",
+    "Route": "#A12"
+  },
+  {
+    "ID": "A13",
+    "Application": "Admin",
+    "Screen": "Procurement and PO approvals",
+    "Primary action": "Approve purchase",
+    "Access": "Independent authorized approver",
+    "Key states": "Limit exceeded / cost changed",
+    "MVP stage": "2",
+    "Route": "#A13"
+  },
+  {
+    "ID": "A14",
+    "Application": "Admin",
+    "Screen": "Receipts and inspections",
+    "Primary action": "Match accepted goods",
+    "Access": "Procurement staff",
+    "Key states": "Short / rejected / partial",
+    "MVP stage": "2",
+    "Route": "#A14"
+  },
+  {
+    "ID": "A15",
+    "Application": "Admin",
+    "Screen": "Shipments and dispatch board",
+    "Primary action": "Assign courier and dispatch",
+    "Access": "Operations staff",
+    "Key states": "Blocked / split / delivery failed",
+    "MVP stage": "2",
+    "Route": "#A15"
+  },
+  {
+    "ID": "A16",
+    "Application": "Admin",
+    "Screen": "Tracking and incident workspace",
+    "Primary action": "Resolve delivery incident",
+    "Access": "Operations staff",
+    "Key states": "Lost / returned / delayed",
+    "MVP stage": "2",
+    "Route": "#A16"
+  },
+  {
+    "ID": "A17",
+    "Application": "Admin",
+    "Screen": "Payments and reconciliation",
+    "Primary action": "Verify actual funds",
+    "Access": "Finance",
+    "Key states": "Duplicate / unmatched / late / overpaid",
+    "MVP stage": "1",
+    "Route": "#A17"
+  },
+  {
+    "ID": "A18",
+    "Application": "Admin",
+    "Screen": "COD and cash reconciliation",
+    "Primary action": "Verify handover",
+    "Access": "Finance",
+    "Key states": "Missing cash / disputed amount",
+    "MVP stage": "2",
+    "Route": "#A18"
+  },
+  {
+    "ID": "A19",
+    "Application": "Admin",
+    "Screen": "Refund review and execution",
+    "Primary action": "Approve and submit refund",
+    "Access": "Independent finance approver",
+    "Key states": "Partial / failed / manual review",
+    "MVP stage": "2",
+    "Route": "#A19"
+  },
+  {
+    "ID": "A20",
+    "Application": "Admin",
+    "Screen": "Supplier payables and settlement",
+    "Primary action": "Match and settle liability",
+    "Access": "Finance plus approver",
+    "Key states": "Advance / on hold / partial settlement",
+    "MVP stage": "2",
+    "Route": "#A20"
+  },
+  {
+    "ID": "A21",
+    "Application": "Admin",
+    "Screen": "Returns and supplier recovery",
+    "Primary action": "Resolve return",
+    "Access": "Support operations and finance",
+    "Key states": "Inspection pending / recovery disputed",
+    "MVP stage": "2",
+    "Route": "#A21"
+  },
+  {
+    "ID": "A22",
+    "Application": "Admin",
+    "Screen": "Customer and support workspace",
+    "Primary action": "Manage authorized conversation",
+    "Access": "Support",
+    "Key states": "Identity unverified / restricted details",
+    "MVP stage": "2",
+    "Route": "#A22"
+  },
+  {
+    "ID": "A23",
+    "Application": "Admin",
+    "Screen": "WhatsApp settings and chat preview",
+    "Primary action": "Configure business number and preview messages",
+    "Access": "Support and integration admin",
+    "Key states": "Opt-out / rejected template / webhook failure",
+    "MVP stage": "3",
+    "Route": "#A23"
+  },
+  {
+    "ID": "A24",
+    "Application": "Admin",
+    "Screen": "Video library and commerce links",
+    "Primary action": "Approve and publish video",
+    "Access": "Content reviewer",
+    "Key states": "No consent / processing failed / stale price",
+    "MVP stage": "3",
+    "Route": "#A24"
+  },
+  {
+    "ID": "A25",
+    "Application": "Admin",
+    "Screen": "AI jobs review and evaluation",
+    "Primary action": "Inspect suggestions and quality",
+    "Access": "Catalog reviewer",
+    "Key states": "Failed job / budget cap / low confidence",
+    "MVP stage": "3",
+    "Route": "#A25"
+  },
+  {
+    "ID": "A26",
+    "Application": "Admin",
+    "Screen": "Approval center",
+    "Primary action": "Approve specific action version",
+    "Access": "Independent scoped approver",
+    "Key states": "Self approval / changed version / expired",
+    "MVP stage": "1",
+    "Route": "#A26"
+  },
+  {
+    "ID": "A27",
+    "Application": "Admin",
+    "Screen": "Reports and ledger exports",
+    "Primary action": "Review performance and balances",
+    "Access": "Scoped finance and management",
+    "Key states": "Reconciliation mismatch / redacted export",
+    "MVP stage": "2",
+    "Route": "#A27"
+  },
+  {
+    "ID": "A28",
+    "Application": "Admin",
+    "Screen": "Settings zones terms and policies",
+    "Primary action": "Configure launch rules",
+    "Access": "Authorized manager",
+    "Key states": "Unset threshold / invalid configuration",
+    "MVP stage": "1",
+    "Route": "#A28"
+  },
+  {
+    "ID": "A29",
+    "Application": "Admin",
+    "Screen": "Audit and access history",
+    "Primary action": "Investigate changes",
+    "Access": "Authorized auditor",
+    "Key states": "Restricted PII / immutable events",
+    "MVP stage": "1",
+    "Route": "#A29"
+  },
+  {
+    "ID": "A30",
+    "Application": "Admin",
+    "Screen": "Integration health and retry queues",
+    "Primary action": "Resolve provider failure",
+    "Access": "Technical administrator",
+    "Key states": "Dead letter / outage / secret rotation",
+    "MVP stage": "3",
+    "Route": "#A30"
+  },
+  {
+    "ID": "A31",
+    "Application": "Admin",
+    "Screen": "Promotions and discount rules",
+    "Primary action": "Configure approved promotion",
+    "Access": "Sales manager with approval",
+    "Key states": "Expired / cap reached / ineligible / inactive",
+    "MVP stage": "1",
+    "Route": "#A31"
+  },
+  {
+    "ID": "A32",
+    "Application": "Admin",
+    "Screen": "Nigeria delivery zones and transport rates",
+    "Primary action": "Configure destination pricing",
+    "Access": "Operations manager with approval",
+    "Key states": "Unconfigured town / weight surcharge / inactive route",
+    "MVP stage": "1",
+    "Route": "#A32"
+  },
+  {
+    "ID": "A33",
+    "Application": "Admin",
+    "Screen": "Workers teams and assignments",
+    "Primary action": "Manage approved staff teams",
+    "Access": "Operations manager",
+    "Key states": "Pending activation / suspended / overloaded",
+    "MVP stage": "2",
+    "Route": "#A33"
+  },
+  {
+    "ID": "A34",
+    "Application": "Admin",
+    "Screen": "Worker activity and tracking",
+    "Primary action": "Review on-shift check-ins",
+    "Access": "Scoped operations manager",
+    "Key states": "Consent missing / stale check-in / off shift",
+    "MVP stage": "2",
+    "Route": "#A34"
+  },
+  {
+    "ID": "A35",
+    "Application": "Admin",
+    "Screen": "Product images and video collection",
+    "Primary action": "Collect rights-approved product media",
+    "Access": "Catalog preparer and reviewer",
+    "Key states": "Missing rights / reattach file / processing / rejected",
+    "MVP stage": "2",
+    "Route": "#A35"
+  },
+  {
+    "ID": "A36",
+    "Application": "Admin",
+    "Screen": "Category and attribute administration",
+    "Primary action": "Review product schemas",
+    "Access": "Independent catalog reviewer",
+    "Key states": "Missing specification / incompatible category / draft version",
+    "MVP stage": "2",
+    "Route": "#A36"
+  },
+  {
+    "ID": "A38",
+    "Application": "Admin",
+    "Screen": "Admin login",
+    "Primary action": "Sign in to admin account",
+    "Access": "Public",
+    "Key states": "Invalid credentials / permission / lockout",
+    "MVP stage": "1",
+    "Route": "#A38"
+  },
+  {
+    "ID": "A39",
+    "Application": "Admin",
+    "Screen": "Worker login management",
+    "Primary action": "Create or remove worker access",
+    "Access": "Manager admin",
+    "Key states": "Duplicate email / invalid role / removed access",
+    "MVP stage": "1",
+    "Route": "#A39"
+  },
+  {
+    "ID": "A40",
+    "Application": "Admin",
+    "Screen": "Admin password recovery",
+    "Primary action": "Reset own admin password",
+    "Access": "Public",
+    "Key states": "Invalid recovery code / revoked sessions",
+    "MVP stage": "1",
+    "Route": "#A40"
+  },
+  {
+    "ID": "A41",
+    "Application": "Admin",
+    "Screen": "Admin account security",
+    "Primary action": "Change password or sign out",
+    "Access": "Authenticated scoped admin",
+    "Key states": "Wrong password / expired session / scope restriction",
+    "MVP stage": "1",
+    "Route": "#A41"
+  }
+]

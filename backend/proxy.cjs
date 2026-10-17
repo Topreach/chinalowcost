@@ -1,0 +1,5 @@
+const {BlockList,isIP}=require('node:net');
+function address(ip){return ip?.startsWith('::ffff:')?ip.slice(7):ip;}
+function trustedProxies(value=''){const list=new BlockList();for(const item of value.split(',').map(s=>s.trim()).filter(Boolean)){const [ip,prefix]=item.split('/'),version=isIP(ip),bits=prefix===undefined?(version===4?32:128):Number(prefix);if(!version||!Number.isInteger(bits)||bits<0||bits>(version===4?32:128))throw Error('Invalid TRUSTED_PROXY_CIDRS');list.addSubnet(ip,bits,version===4?'ipv4':'ipv6');}return ip=>{const normalized=address(ip),version=isIP(normalized);return !!version&&list.check(normalized,version===4?'ipv4':'ipv6');};}
+function clientIP(req,trust){let current=address(req.socket.remoteAddress)||'unknown';if(!trust(current))return current;const raw=req.headers['x-forwarded-for'];if(typeof raw!=='string'||raw.length>2000)return current;const chain=raw.split(',').map(x=>address(x.trim()));if(chain.length>10||chain.some(x=>!isIP(x)))return current;for(let i=chain.length-1;i>=0&&trust(current);i--)current=chain[i];return current;}
+module.exports={trustedProxies,clientIP};

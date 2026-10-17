@@ -1,0 +1,87 @@
+ID,Application,Screen,Primary action,Access,Key states,MVP stage
+C01,Customer,Customer login,Sign in to customer account,Public,Wrong credentials / account session / retry,1
+C02,Customer,Home retail and wholesale,Select shopping mode,Public,Loading / offline / empty,1
+C03,Customer,Categories and product listing,Filter products,Public,No results / stale stock,1
+C04,Customer,Text search,Find product,Public,No results / suggestions,1
+C05,Customer,Photo search upload,Upload or capture photo,Public,Permission denied / invalid media / processing,3
+C06,Customer,Photo search matches,Choose similar product,Public,Matches / no match / AI unavailable,3
+C07,Customer,Product detail,Select variant and add quantity,Public,Unavailable / invalid pack / stale availability,1
+C08,Customer,Wholesale calculator,Calculate and request quote,Public,MOQ / tier boundary / delivery unknown,1
+C09,Customer,Quotation list and detail,Download PDF or accept version,Own customer,Expired / superseded / approval pending,1
+C10,Customer,Cart,Review priced items,Own customer or guest,Price changed / item unavailable,1
+C11,Customer,Address and delivery zone,Confirm location,Own customer,Unsupported zone / invalid address,1
+C12,Customer,Checkout review,Confirm final total and terms,Own customer,Stock pending / changed quote / reservation expired,1
+C13,Customer,Payment method and hosted handoff,Pay order,Own customer,Pending / failed / verified / late payment,1
+C14,Customer,Transfer and COD instructions,Submit reference or choose eligible COD,Own customer,Verification pending / COD ineligible,2
+C15,Customer,Order list and detail,Review order,Own customer,Partial / canceled / refund pending,1
+C16,Customer,Tracking and shipment detail,View milestones and delivery evidence,Own customer,Split shipment / failed attempt / delayed,2
+C17,Customer,Video feed and video detail,Shop linked products,Public,Slow network / unavailable linked SKU,3
+C18,Customer,Support and WhatsApp handoff,Contact support,Own customer,Agent unavailable / message failed,3
+C19,Customer,Return request and case detail,Request return with evidence,Own delivered items,Ineligible / inspection pending / refund processing,2
+C20,Customer,Profile addresses and preferences,Manage details and consent,Own customer,Validation / opt-out / deletion request,1
+C21,Customer,Receipt and refund history,Download financial record,Own customer,Pending settlement / partial refund,2
+C22,Customer,Offers and promo eligibility,Apply eligible promotion,Own customer,Expired / minimum not met / wrong mode / cap reached,1
+C23,Customer,Customer signup,Create customer account,Public,Duplicate email / invalid password / recovery code,1
+C24,Customer,Customer password recovery,Reset own password,Public,Invalid recovery code / expired session,1
+C25,Customer,Customer account security,Change password or sign out,Own authenticated customer,Wrong current password / mismatch / revoked session,1
+W01,Worker,Sign in and activation status,Authenticate,Staff,Pending approval / suspended / MFA,1
+W02,Worker,Assigned tasks and task detail,Start assigned task,Scoped staff,Overdue / reassigned / offline,2
+W03,Worker,Supplier visit detail,Record visit and consent,Assigned catalog staff,No consent / canceled visit,2
+W04,Worker,Capture photos and videos,Upload approved capture,Assigned catalog staff,Permission denied / retry / offline draft,2
+W05,Worker,AI catalog draft review,Verify suggested attributes,Assigned catalog staff,Uncertain fields / extraction failed,3
+W06,Worker,Manual catalog draft and submission,Submit draft,Assigned catalog staff,Missing MOQ / invalid price / rejected,1
+W07,Worker,Availability confirmation,Record supplier confirmation,Assigned procurement staff,Stale / unavailable / quantity change,2
+W08,Worker,Pickup and purchase order detail,Confirm goods collected,Assigned procurement staff,Partial pickup / supplier delay,2
+W09,Worker,Inspection and discrepancy,Accept or reject units,Assigned procurement staff,Damaged / wrong variant / short quantity,2
+W10,Worker,Packing and dispatch,Confirm shipment handover,Assigned logistics staff,Missing units / blocked dispatch,2
+W11,Worker,Delivery tasks and directions,Start delivery,Assigned delivery staff,Offline / failed attempt,2
+W12,Worker,Delivery proof and OTP,Submit proof,Assigned delivery staff,Invalid OTP / customer absent / exception approval,2
+W13,Worker,Cash collection and handover,Record collected cash,Assigned delivery staff,Discrepancy / awaiting finance,2
+W14,Worker,Return collection,Record returned units,Assigned logistics staff,Wrong item / incomplete collection,2
+W15,Worker,Sync queue and profile,Retry drafts and view access,Active staff,Sync conflict / session revoked,2
+W16,Worker,Shift check-ins and own location,Share task check-in,Approved assigned worker,Consent required / stale / off shift / permission denied,2
+W17,Worker,Assigned order workspace,Review order and destination,Assigned active staff,Transport unquoted / split order / revised destination,2
+W18,Worker,Catalog draft library,Resume multi-product capture,Assigned catalog staff,Incomplete images / corrections / pending review,2
+W19,Worker,Worker login help,Get admin-issued login help,Public,Account issued by admin / access removed,1
+W20,Worker,Worker password recovery,Reset worker password,Public,Invalid recovery code / approval still required,1
+W21,Worker,Worker account security,Change password and end session,Own authenticated worker,Wrong password / suspended staff / expired session,1
+A01,Admin,Overview and exception queues,Resolve urgent tasks,Scoped management,No data / overdue / integration failure,1
+A02,Admin,Staff applications and activation,Approve staff,Independent manager,Pending / rejected / suspended,1
+A03,Admin,Roles permissions and assignments,Grant scoped access,Authorized admin with approval,Conflict / expired approval,1
+A04,Admin,Supplier list onboarding and detail,Activate verified supplier,Operations manager,Incomplete verification / on hold,1
+A05,Admin,Supplier banking and terms,Verify financial details,Finance with independent approval,Changed bank / unverified / restricted,2
+A06,Admin,Visits and task assignments,Schedule field work,Operations manager,Overdue / reassignment,2
+A07,Admin,Catalog and SKU editor,Manage product variants,Catalog staff,Duplicate / draft / rejected,1
+A08,Admin,Catalog approval and publication,Approve version,Independent catalog reviewer,Missing evidence / own request blocked,1
+A09,Admin,Price books and tiers,Set approved prices,Authorized pricing staff,Overlapping tiers / margin exception,1
+A10,Admin,Availability and reservations,Resolve stock,Operations staff,Stale / expired / oversubscribed,2
+A11,Admin,Quote queue and editor,Issue negotiated quote,Sales with approval policy,Expired / superseded / discount approval,1
+A12,Admin,Orders and order workspace,Confirm and manage order,Scoped operations,Unpaid / exception / partial / canceled,1
+A13,Admin,Procurement and PO approvals,Approve purchase,Independent authorized approver,Limit exceeded / cost changed,2
+A14,Admin,Receipts and inspections,Match accepted goods,Procurement staff,Short / rejected / partial,2
+A15,Admin,Shipments and dispatch board,Assign courier and dispatch,Operations staff,Blocked / split / delivery failed,2
+A16,Admin,Tracking and incident workspace,Resolve delivery incident,Operations staff,Lost / returned / delayed,2
+A17,Admin,Payments and reconciliation,Verify actual funds,Finance,Duplicate / unmatched / late / overpaid,1
+A18,Admin,COD and cash reconciliation,Verify handover,Finance,Missing cash / disputed amount,2
+A19,Admin,Refund review and execution,Approve and submit refund,Independent finance approver,Partial / failed / manual review,2
+A20,Admin,Supplier payables and settlement,Match and settle liability,Finance plus approver,Advance / on hold / partial settlement,2
+A21,Admin,Returns and supplier recovery,Resolve return,Support operations and finance,Inspection pending / recovery disputed,2
+A22,Admin,Customer and support workspace,Manage authorized conversation,Support,Identity unverified / restricted details,2
+A23,Admin,WhatsApp settings and chat preview,Configure business number and preview messages,Support and integration admin,Opt-out / rejected template / webhook failure,3
+A24,Admin,Video library and commerce links,Approve and publish video,Content reviewer,No consent / processing failed / stale price,3
+A25,Admin,AI jobs review and evaluation,Inspect suggestions and quality,Catalog reviewer,Failed job / budget cap / low confidence,3
+A26,Admin,Approval center,Approve specific action version,Independent scoped approver,Self approval / changed version / expired,1
+A27,Admin,Reports and ledger exports,Review performance and balances,Scoped finance and management,Reconciliation mismatch / redacted export,2
+A28,Admin,Settings zones terms and policies,Configure launch rules,Authorized manager,Unset threshold / invalid configuration,1
+A29,Admin,Audit and access history,Investigate changes,Authorized auditor,Restricted PII / immutable events,1
+A30,Admin,Integration health and retry queues,Resolve provider failure,Technical administrator,Dead letter / outage / secret rotation,3
+A31,Admin,Promotions and discount rules,Configure approved promotion,Sales manager with approval,Expired / cap reached / ineligible / inactive,1
+A32,Admin,Nigeria delivery zones and transport rates,Configure destination pricing,Operations manager with approval,Unconfigured town / weight surcharge / inactive route,1
+A33,Admin,Workers teams and assignments,Manage approved staff teams,Operations manager,Pending activation / suspended / overloaded,2
+A34,Admin,Worker activity and tracking,Review on-shift check-ins,Scoped operations manager,Consent missing / stale check-in / off shift,2
+A35,Admin,Product images and video collection,Collect rights-approved product media,Catalog preparer and reviewer,Missing rights / reattach file / processing / rejected,2
+A36,Admin,Category and attribute administration,Review product schemas,Independent catalog reviewer,Missing specification / incompatible category / draft version,2
+A38,Admin,Admin login,Sign in to admin account,Public,Invalid credentials / permission / lockout,1
+A39,Admin,Worker login management,Create or remove worker access,Manager admin,Duplicate email / invalid role / removed access,1
+A40,Admin,Admin password recovery,Reset own admin password,Public,Invalid recovery code / revoked sessions,1
+A41,Admin,Admin account security,Change password or sign out,Authenticated scoped admin,Wrong password / expired session / scope restriction,1
