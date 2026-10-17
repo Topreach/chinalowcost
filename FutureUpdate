@@ -40,6 +40,7 @@ ssh -p 2222 root@173.249.34.3
 ```bash
 bash /usr/local/sbin/chinalowcost-release YOUR_FULL_COMMIT_SHA
 ```
+bash /usr/local/sbin/chinalowcost-release d00e9682acd36f87146413427a40b5064a082657
 
 The release script installs dependencies, builds, runs tests, checks startup against a database copy, creates a fresh database backup, and switches versions during a short maintenance window. Failed initial startup triggers rollback.
 
