@@ -32,6 +32,8 @@ ln -s "$ROOT/data" "$CANDIDATE/data"
 (cd "$CANDIDATE" && runuser -u chinalowcost -- env MAINTENANCE_FILE="$ROOT/maintenance.flag" node --env-file="$ROOT/.env" backend/release-preflight.cjs)
 BACKUP="/root/chinalowcost-release-backups/$STAMP-$REVISION"
 install -d -m 0700 "$BACKUP"
+DB_STAGE="$ROOT/data/.release-backup-$STAMP-$REVISION"
+install -d -m 0700 -o chinalowcost -g chinalowcost "$DB_STAGE"
 cp -a "$ROOT/.env" "$BACKUP/environment"
 systemctl cat "$SERVICE" > "$BACKUP/service.txt"
 NEEDS_ROLLBACK=0
@@ -42,7 +44,8 @@ rollback() {
     echo 'Candidate failed before public traffic was enabled; restoring the previous release.' >&2
     systemctl stop "$SERVICE" || true
     if [[ -f "$BACKUP/app.sqlite" ]]; then
-      (cd "$ROOT" && node --env-file="$ROOT/.env" "$CANDIDATE/backend/release-database.cjs" restore "$BACKUP/app.sqlite") || { echo 'Database restore failed. Maintenance remains enabled.' >&2; exit 1; }
+      install -m 0600 -o chinalowcost -g chinalowcost "$BACKUP/app.sqlite" "$DB_STAGE/restore.sqlite"
+      (cd "$ROOT" && runuser -u chinalowcost -- node --env-file="$ROOT/.env" "$CANDIDATE/backend/release-database.cjs" restore "$DB_STAGE/restore.sqlite") || { echo 'Database restore failed. Maintenance remains enabled.' >&2; exit 1; }
     fi
     ln -s "$PREVIOUS" "$ROOT/.rollback-current"
     mv -Tf "$ROOT/.rollback-current" "$ROOT/current"
@@ -65,7 +68,8 @@ trap rollback ERR
 touch "$ROOT/maintenance.flag"
 NEEDS_ROLLBACK=1
 systemctl stop "$SERVICE"
-(cd "$ROOT" && node --env-file="$ROOT/.env" "$CANDIDATE/backend/release-database.cjs" backup "$BACKUP/app.sqlite")
+(cd "$ROOT" && runuser -u chinalowcost -- node --env-file="$ROOT/.env" "$CANDIDATE/backend/release-database.cjs" backup "$DB_STAGE/app.sqlite")
+install -m 0600 -o root -g root "$DB_STAGE/app.sqlite" "$BACKUP/app.sqlite"
 ln -s "$CANDIDATE" "$ROOT/.next-current"
 mv -Tf "$ROOT/.next-current" "$ROOT/current"
 systemctl start "$SERVICE"

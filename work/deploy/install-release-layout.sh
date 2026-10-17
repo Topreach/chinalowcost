@@ -5,7 +5,9 @@ ROOT=/opt/chinalowcost
 [[ -f "$ROOT/.env" && -d "$ROOT/data" && -f "$ROOT/backend/server.cjs" ]] || { echo 'Existing application layout not found.' >&2; exit 1; }
 getent passwd chinalowcost >/dev/null
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-chmod o+x "$ROOT"
+chown root:chinalowcost "$ROOT" "$ROOT/.env"
+chmod 0751 "$ROOT"
+chmod 0640 "$ROOT/.env"
 install -d -m 0755 -o root -g root "$ROOT/public-maintenance"
 install -m 0644 -o root -g root "$SCRIPT_DIR/maintenance.html" "$ROOT/public-maintenance/maintenance.html"
 install -d -m 0750 -o root -g chinalowcost "$ROOT/releases"

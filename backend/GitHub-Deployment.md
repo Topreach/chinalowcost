@@ -28,7 +28,7 @@ Prerequisites: current application and data are backed up, Node 24.14+, Git, cur
    install -m 0750 -o root -g root /opt/chinalowcost-source/work/deploy/forced-deploy-command.sh /usr/local/sbin/chinalowcost-deploy-command
    bash /opt/chinalowcost-source/work/deploy/install-release-layout.sh
 
-   This updates the service definition but does not restart the currently running application. Existing code remains the first rollback target. Database paths must resolve inside /opt/chinalowcost/data.
+   This protects the application directory as root:chinalowcost and the .env file as root:chinalowcost 0640, preserving service-account read access. Database backup/restore helpers run as the application account; a root-only copy of the snapshot is retained. This updates the service definition but does not restart the currently running application. Existing code remains the first rollback target. Database paths must resolve inside /opt/chinalowcost/data.
 
 3. Install the maintenance page in /opt/chinalowcost/public-maintenance/maintenance.html (readable by Nginx). Adapt work/deploy/nginx-maintenance.conf inside the existing chinalowcost.com HTTPS server block. Keep the existing Cloudflare Origin certificate and other sites intact. Add the documented maintenance.flag guard inside the existing location / proxy block. Run nginx -t, then systemctl reload nginx. The deploy helper refuses to run without this guard.
 
