@@ -16,7 +16,7 @@
     }
   });
   let whatsappDraftUrl='';
-  let currentUser=null;let csrf='',busy=0;const sourceUrls=new Set();
+  let supportEmail='';let currentUser=null;let csrf='',busy=0;const sourceUrls=new Set();
   const paymentReference=new URL(location.href||'http://localhost/').searchParams.get('payment_reference');
   frame.src='/application/frame'+(paymentReference?'#C13':location.hash||'#C02');
   if(typeof frame.addEventListener==='function')frame.addEventListener('load',()=>{if(typeof paymentReference==='string'&&/^CLC-[a-f0-9]{32}$/.test(paymentReference))frame.contentWindow.postMessage({channel:'clc-payment-return',reference:paymentReference},'*');});
@@ -24,6 +24,7 @@
     if(event.source!==frame.contentWindow||event.origin!=='null')return;
     const message=event.data;
     if(message?.channel==='clc-language-setting'&&['en','yo','ha','ig'].includes(message.language)){try{localStorage.setItem('clc-application-language',message.language);}catch{}return;}
+    if(message?.channel==='clc-support-email'){if(supportEmail)location.assign('mailto:'+encodeURIComponent(supportEmail)+'?subject=ChinaLowCost%20support%20request');return;}
     if(message?.channel==='clc-whatsapp-open'){if(whatsappDraftUrl)location.assign(whatsappDraftUrl);return;}
     if(message?.channel==='clc-evidence'&&/^[a-f0-9]{48}$/.test(message.id||'')){window.open('/api/files/'+message.id,'_blank','noopener,noreferrer');return;}
     if(message?.channel==='clc-open-source'){try{const target=new URL(message.url);if(sourceUrls.has(target.href)&&target.protocol==='https:'&&!target.username&&!target.password)window.open(target.href,'_blank','noopener,noreferrer');}catch{}return;}
@@ -79,6 +80,7 @@
       if(response.status===401&&!allowed.has(message.action)){csrf='';frame.contentWindow.postMessage({channel:'clc-session-expired'},'*');}
       if(!response.ok)throw Error(data.error||'Account request failed');
       for(const item of [data,...(Array.isArray(data.drafts)?data.drafts:[])])for(const source of [...(Array.isArray(item.sources)?item.sources:[]),...(Array.isArray(item.candidates)?item.candidates:[])])for(const value of [source.url,source.sourceUrl]){if(typeof value==='string'){try{const target=new URL(value);if(target.protocol==='https:'&&!target.username&&!target.password&&sourceUrls.size<1000)sourceUrls.add(target.href);}catch{}}}
+      if(message.action==='email-public')supportEmail=typeof data.supportEmail==='string'&&/^[^\s<>:,;?]+@[^\s<>:,;?]+\.[^\s<>:,;?]+$/.test(data.supportEmail)?data.supportEmail:'';
       if(typeof data.csrf==='string')csrf=data.csrf;if(['me','login','login-factor','mfa/confirm','profile'].includes(message.action))currentUser=data.user||null;
       if(message.action==='logout'||message.action==='password'||message.action==='mfa/disable'){csrf='';currentUser=null;sourceUrls.clear();whatsappDraftUrl='';}
       if(message.action==='whatsapp-link'){const target=new URL(data.url);if(target.origin!=='https://wa.me'||!/^\/[1-9][0-9]{7,14}$/.test(target.pathname)||target.username||target.password||target.port)throw Error('Invalid WhatsApp link');whatsappDraftUrl=target.href;}

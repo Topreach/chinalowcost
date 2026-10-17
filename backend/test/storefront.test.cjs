@@ -4,14 +4,19 @@ const vm=require('node:vm');
 const fs=require('node:fs');
 const path=require('node:path');
 function host(responseData){
-  const replies=[],requests=[],opened=[],frame={contentWindow:{postMessage:data=>replies.push(data)}};let listener;
+  const replies=[],requests=[],opened=[],assigned=[],frame={contentWindow:{postMessage:data=>replies.push(data)}};let listener;
   vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../public/storefront-host.js'),'utf8'),{
-    document:{getElementById:()=>frame},location:{hash:'#A38'},window:{addEventListener:(kind,callback)=>{if(kind==='message')listener=callback;},open:(...args)=>opened.push(args)},
+    document:{getElementById:()=>frame},location:{hash:'#A38',assign:url=>assigned.push(url)},window:{addEventListener:(kind,callback)=>{if(kind==='message')listener=callback;},open:(...args)=>opened.push(args)},
     fetch:async(url,options)=>{requests.push({url,options});return {ok:true,json:async()=>responseData?{...responseData}:{user:{id:'admin',role:'admin'},csrf:'private-csrf'}};},
     JSON,Set,Number,Error,URL
   });
-  return {frame,replies,requests,opened,send:(action,extra={})=>listener({source:frame.contentWindow,origin:'null',data:{channel:'clc-server-auth',id:1,action,body:{},...extra}}),listener};
+  return {frame,replies,requests,opened,assigned,send:(action,extra={})=>listener({source:frame.contentWindow,origin:'null',data:{channel:'clc-server-auth',id:1,action,body:{},...extra}}),listener};
 }
+
+test('support email button opens only the server-configured address in an email draft',async()=>{
+ const h=host({supportEmail:'support@chinalowcost.com'}),open=source=>h.listener({source,origin:'null',data:{channel:'clc-support-email',email:'attacker@example.test'}});
+ await open(h.frame.contentWindow);assert.equal(h.assigned.length,0);await h.send('email-public');await open({});assert.equal(h.assigned.length,0);await open(h.frame.contentWindow);assert.equal(h.assigned[0],'mailto:support%40chinalowcost.com?subject=ChinaLowCost%20support%20request');
+});
 test('designed UI host authenticates the exact sandbox frame and rejects arbitrary endpoints',async()=>{
   const h=host();assert.equal(h.frame.src,'/application/frame#A38');
   await h.listener({source:{},origin:'null',data:{channel:'clc-server-auth',id:1,action:'login'}});
