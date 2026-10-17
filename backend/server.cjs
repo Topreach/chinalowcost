@@ -5,7 +5,7 @@ const { config } = require('./config.cjs');
 const { Store,digest } = require('./store.cjs');
 const { Payments } = require('./payments.cjs');
 const {Auth,passwordMatches,passwordValid,emailValid}=require('./auth.cjs');
-const {createMailer}=require('./email.cjs');
+const {createMailer,mailAvailable}=require('./email.cjs');
 const {Files}=require('./files.cjs');
 const {HttpError,headers,read,csrf,requireSession,admin}=require('./security.cjs');
 const {randomBytes}=require('node:crypto');
@@ -14,8 +14,10 @@ const {AI,imageInput}=require('./ai.cjs');
 const {Catalog}=require('./catalog.cjs');
 const {Business}=require('./business.cjs');
 const {Google}=require('./google.cjs');
-function createServer(settings, store = new Store(settings.file), request = fetch, mailer=createMailer(settings), scan) {
+function createServer(settings, store = new Store(settings.file), request = fetch, mailer, scan) {
   const trustProxy=require('./proxy.cjs').trustedProxies(settings.trustedProxyCIDRs||'');const auth=new Auth(store,settings),files=new Files(store,settings,scan);let authBusy=0;
+  const emailSettings=new (require('./email-settings.cjs').EmailSettings)(store,auth,settings);if(mailer===undefined)mailer=emailSettings.mailer;
+  const emailInbox=new (require('./email-inbox.cjs').EmailInbox)(store,auth,emailSettings);if(settings.backgroundJobs!==false)emailInbox.start();
   store.paymentMode=settings.paymentMode||'test';store.growth.environment=store.paymentMode;if(store.db.prepare('SELECT record FROM orders').all().some(r=>(JSON.parse(r.record).paymentEnvironment||'test')!==store.paymentMode))throw Error('Database payment environment does not match this deployment');
   const payments = new Payments(settings, store, request, mailer,auth);
   const messages=new Messages(store,settings,mailer),ai=new AI(store,auth,settings,request),catalog=new Catalog(store,settings,files,ai);
@@ -25,8 +27,8 @@ function createServer(settings, store = new Store(settings.file), request = fetc
   const whatsapp=new (require('./whatsapp.cjs').WhatsApp)(store);
   const automation=new (require('./whatsapp-automation.cjs').WhatsAppAutomation)(store,auth,ai,catalog,request);if(settings.backgroundJobs!==false)automation.start();
   const {accountEmail}=require('./email-templates.cjs');
-  const sendAccountEmail=async(user,kind,url)=>{if(!mailer)return;try{const {previewHtml,...content}=accountEmail(settings,kind,url);await mailer.send({from:settings.emailFrom,to:user.email,...(settings.supportEmail?{replyTo:settings.supportEmail}:{}),...content});}catch{store.audit(user.id,'email.delivery_failed',user.id);}};
-  const sendLink=async(user,kind)=>{if(!mailer)throw new HttpError(503,'Email is not configured');const token=auth.challenge(user,kind);await sendAccountEmail(user,kind,settings.appUrl+'/secure#'+kind+'='+token);};
+  const sendAccountEmail=async(user,kind,url)=>{if(!mailAvailable(mailer))return;try{const {previewHtml,...content}=accountEmail(settings,kind,url);await mailer.send({from:settings.emailFrom,to:user.email,...(settings.supportEmail?{replyTo:settings.supportEmail}:{}),...content});}catch{store.audit(user.id,'email.delivery_failed',user.id);}};
+  const sendLink=async(user,kind)=>{if(!mailAvailable(mailer))throw new HttpError(503,'Email is not configured');const token=auth.challenge(user,kind);await sendAccountEmail(user,kind,settings.appUrl+'/secure#'+kind+'='+token);};
   const publicOrder=o=>({id:o.id,customerId:o.customerId,email:o.email,amountKobo:o.amountKobo,walletKobo:o.walletKobo||0,payableKobo:o.payableKobo??o.amountKobo,paymentEnvironment:o.paymentEnvironment||'test',paymentMethod:o.paymentMethod||'paystack',currency:o.currency,status:o.status,reference:o.reference,receipt:o.receipt,expiresAt:o.expiresAt,revoked:!!o.revoked,lines:o.lines||[],address:o.address||null,goodsKobo:o.goodsKobo,deliveryKobo:o.deliveryKobo,taxKobo:o.taxKobo,promoCode:o.promoCode,goodsDiscountKobo:o.goodsDiscountKobo||0,shippingDiscountKobo:o.shippingDiscountKobo||0,quoteId:o.quoteId,quoteVersion:o.quoteVersion});
   const server=http.createServer(async (req, res) => {
     headers(res,settings);let hashing=false;
@@ -68,6 +70,7 @@ function createServer(settings, store = new Store(settings.file), request = fetc
       const publicVideo=url.pathname.match(/^\/api\/storefront\/video\/([a-f0-9]{48})$/);if(req.method==='GET'&&publicVideo){const v=catalog.video(null,publicVideo[1]);res.setHeader('Cross-Origin-Resource-Policy','cross-origin');res.writeHead(200,{'Content-Type':v.mime});fs.createReadStream(v.path).on('error',()=>res.destroy()).pipe(res);return;}
       const publicMedia=url.pathname.match(/^\/api\/storefront\/media\/([a-f0-9]{48})$/);
       if(req.method==='GET'&&publicMedia){const media=catalog.media(null,publicMedia[1]);res.setHeader('Cross-Origin-Resource-Policy','cross-origin');res.writeHead(200,{'Content-Type':media.mime});fs.createReadStream(media.path).on('error',()=>res.destroy()).pipe(res);return;}
+      if(req.method==='GET'&&url.pathname==='/api/email/public')return json(200,{supportEmail:settings.supportEmail||''});
       if(req.method==='GET'&&url.pathname==='/api/auth/me')return json(200,session?{user:auth.public(session.user),csrf:session.csrf,mfaRequired:false}:{user:null});
       if(req.method==='POST'&&url.pathname==='/api/paystack/webhook'){
         const raw=await read(req);
@@ -110,7 +113,7 @@ function createServer(settings, store = new Store(settings.file), request = fetc
           if(action==='login'){const result=body.stepwise?await auth.beginLogin(body.email,body.password):await auth.login(body.email,body.password,body.otp);if(!result){store.audit(null,'session.login_failed');throw new HttpError(401,'Invalid credentials, verification or authenticator code');}if(result.factorRequired)return json(200,result);res.setHeader('Set-Cookie',auth.cookie(result.token));return json(200,{user:result.user,csrf:result.csrf,mfaRequired:result.mfaRequired});}
           if(action==='login-factor'){const result=auth.finishLogin(body.challenge,body.otp);if(!result)throw new HttpError(401,'Invalid or expired code. Try again or return to sign in.');res.setHeader('Set-Cookie',auth.cookie(result.token));return json(200,{user:result.user,csrf:result.csrf,mfaRequired:result.mfaRequired});}
           if(action==='consume'){if(!['verify','reset','invite'].includes(body.kind))throw new HttpError(400,'Invalid request');const challenge=typeof body.token==='string'&&/^[a-f0-9]{64}$/.test(body.token)?store.db.prepare('SELECT user_id FROM challenges WHERE hash=? AND kind=?').get(digest(body.token),body.kind):null;if(!await auth.consumeChallenge(body.token,body.kind,body.password))throw new HttpError(400,'Link is invalid or expired');if(challenge)await sendAccountEmail(auth.user(challenge.user_id),body.kind==='reset'?'password':'welcome');return json(200,{ok:true});}
-          if(!mailer)throw new HttpError(503,'Email is not configured');
+          if(!mailAvailable(mailer))throw new HttpError(503,'Email is not configured');
           if(!emailValid(body.email))throw new HttpError(400,'Valid email required');
           if(!store.limit('email:'+digest(body.email.toLowerCase()),3,3600000))throw new HttpError(429,'Too many email requests. Try again later.');
           const existing=store.db.prepare('SELECT * FROM users WHERE email=?').get(body.email.toLowerCase());
@@ -144,6 +147,21 @@ function createServer(settings, store = new Store(settings.file), request = fetc
       if(req.method==='GET'&&videoMatch){const v=catalog.video(user,videoMatch[1]);res.writeHead(200,{'Content-Type':v.mime});fs.createReadStream(v.path).on('error',()=>res.destroy()).pipe(res);return;}
       if(req.method==='POST'&&productVideo){const p=catalog.get(productVideo[1]);if(!p||!business.canCatalog(user,p))throw new HttpError(403,'Catalog draft access required');return json(201,await catalog.addVideo(user,p,await read(req,5242880)));}
       if(req.method==='POST'&&url.pathname==='/api/business/video-remove'){const p=catalog.get(body.id);if(!p||!business.canCatalog(user,p))throw new HttpError(403,'Catalog draft access required');return json(200,catalog.removeVideo(user,p,body.videoId));}
+      if(url.pathname.startsWith('/api/admin/email')){
+        admin(session);const configuring=['/api/admin/email','/api/admin/email/verify','/api/admin/email/test'].includes(url.pathname);operations.require(user,configuring?'owner':'support');
+        if(req.method==='GET'&&url.pathname==='/api/admin/email')return json(200,{...emailSettings.public(),inbox:emailInbox.status()});
+        if(req.method==='GET'&&url.pathname==='/api/admin/email/inbox')return json(200,emailInbox.list(url.searchParams.get('before')));
+        if(req.method==='GET'&&url.pathname==='/api/admin/email/message')return json(200,emailInbox.detail(url.searchParams.get('id')));
+        if(req.method==='POST'&&configuring){if(!store.limit('integration-password:'+user.id,5,900000))throw new HttpError(429,'Too many settings attempts');if(!await passwordMatches(body.password,user.password))throw new HttpError(403,'Current administrator password required');
+          if(url.pathname==='/api/admin/email'){if(emailInbox.busy)throw new HttpError(409,'Wait for mailbox sync to finish');return json(200,emailSettings.save(user,{...body,password:body.smtpPassword}));}
+          if(url.pathname==='/api/admin/email/verify')return json(200,await emailSettings.verify());
+          return json(200,await emailSettings.test(user));
+        }
+        if(req.method==='POST'&&url.pathname==='/api/admin/email/sync'){if(!store.limit('mailbox-sync:'+user.id,5,60000))throw new HttpError(429,'Wait before syncing again');return json(200,await emailInbox.sync());}
+        if(req.method==='POST'&&url.pathname==='/api/admin/email/reply'){if(!store.limit('email-reply:'+user.id,20,3600000))throw new HttpError(429,'Email reply limit reached');return json(200,await emailInbox.reply(user,body));}
+        if(req.method==='POST'&&url.pathname==='/api/admin/email/status')return json(200,emailInbox.setStatus(user,body));
+        throw new HttpError(404,'Email operation not found');
+      }
       if(req.method==='GET'&&url.pathname==='/api/admin/operations'){admin(session);return json(200,{...operations.snapshot(user),inventory:operations.scopes(user).some(s=>['owner','operations','finance'].includes(s))?store.inventory.snapshot(user):{stock:[],reservations:[],purchaseOrders:[],receipts:[]},finance:operations.scopes(user).some(s=>['owner','finance'].includes(s))?finance.snapshot(user):null});}
       if(req.method==='GET'&&url.pathname==='/api/admin/reports'){admin(session);return json(200,operations.report(user,Object.fromEntries(url.searchParams)));}
       if(req.method==='POST'&&url.pathname==='/api/admin/import/preview'){admin(session);return json(200,catalogImport.preview(user,body));}if(req.method==='POST'&&url.pathname==='/api/admin/import/commit'){admin(session);return json(200,catalogImport.commit(user,body));}
@@ -214,12 +232,12 @@ function createServer(settings, store = new Store(settings.file), request = fetc
       const productMedia=url.pathname.match(/^\/api\/catalog\/media\/([a-f0-9]{48})$/);
       if(req.method==='GET'&&productMedia){const media=catalog.media(user,productMedia[1]);res.writeHead(200,{'Content-Type':media.mime});fs.createReadStream(media.path).on('error',()=>res.destroy()).pipe(res);return;}
       if(req.method==='POST'&&url.pathname==='/api/ai/chat'){const image=imageInput(body.image);if(image&&body.photoConsent!==true)throw new HttpError(400,'Confirm permission to send the photo to OpenAI');const products=catalog.list();const context=products.map(p=>({sku:p.sku,title:p.title,description:p.description.slice(0,200),retailKobo:p.retailKobo,wholesaleKobo:p.wholesaleKobo,currency:'NGN',moq:p.moq,stockStatus:p.stockStatus}));const result=await ai.response(user,'chat',{text:body.text,image,language:body.language||'en',history:body.history,catalog:context,web:body.web===true});const words=typeof body.text==='string'?body.text.toLowerCase().split(/\s+/).filter(w=>w.length>2):[];const matches=products.filter(p=>result.answer.toLowerCase().includes(p.sku.toLowerCase())||words.some(w=>(p.title+' '+p.description).toLowerCase().includes(w))).slice(0,12);return json(200,{...result,products:matches});}
-      if(req.method==='GET'&&url.pathname==='/api/config'){admin(session);return json(200,{paymentProvider:'paystack',...payments.settings.public(),emailConfigured:!!mailer,uploadsConfigured:!!settings.scanner});}
+      if(req.method==='GET'&&url.pathname==='/api/config'){admin(session);return json(200,{paymentProvider:'paystack',...payments.settings.public(),emailConfigured:mailAvailable(mailer),uploadsConfigured:!!settings.scanner});}
       if(req.method==='GET'&&url.pathname==='/api/orders'){const orders=user.role==='worker'?store.db.prepare('SELECT o.record FROM orders o JOIN assignments a ON a.order_id=o.id WHERE a.worker_id=? LIMIT 200').all(user.id).map(r=>JSON.parse(r.record)):store.orders(user);return json(200,{orders:orders.map(publicOrder)});}
       if(req.method==='GET'&&url.pathname==='/api/admin/users'){admin(session);return json(200,{users:store.db.prepare('SELECT id,email,role,active,verified,mfa_enabled FROM users LIMIT 200').all()});}
       if(req.method==='GET'&&url.pathname==='/api/admin/audit'){admin(session);return json(200,{events:store.db.prepare('SELECT * FROM audit ORDER BY id DESC LIMIT 200').all()});}
       if(req.method==='GET'&&url.pathname==='/api/admin/ledger'){admin(session);return json(200,{entries:store.db.prepare('SELECT * FROM ledger ORDER BY at DESC LIMIT 200').all()});}
-      if(req.method==='POST'&&url.pathname==='/api/admin/users'){admin(session);if(!['worker','customer'].includes(body.role)||!emailValid(body.email))throw new HttpError(400,'Valid email and customer/worker role required');if(!mailer)throw new HttpError(503,'Email is not configured');const invited=await auth.create(body.email,randomBytes(32).toString('hex'),body.role);await sendLink(invited,'invite');store.audit(user.id,'account.invited',invited.id);return json(201,{user:auth.public(invited)});}
+      if(req.method==='POST'&&url.pathname==='/api/admin/users'){admin(session);if(!['worker','customer'].includes(body.role)||!emailValid(body.email))throw new HttpError(400,'Valid email and customer/worker role required');if(!mailAvailable(mailer))throw new HttpError(503,'Email is not configured');const invited=await auth.create(body.email,randomBytes(32).toString('hex'),body.role);await sendLink(invited,'invite');store.audit(user.id,'account.invited',invited.id);return json(201,{user:auth.public(invited)});}
       if(req.method==='POST'&&url.pathname==='/api/admin/users/status'){admin(session);const target=auth.user(body.userId);if(!target||target.role==='admin'||typeof body.active!=='boolean')throw new HttpError(400,'Select a customer/worker and valid status');store.transaction(()=>{store.db.prepare('UPDATE users SET active=? WHERE id=?').run(body.active?1:0,target.id);store.db.prepare('DELETE FROM sessions WHERE user_id=?').run(target.id);store.db.prepare('DELETE FROM challenges WHERE user_id=?').run(target.id);store.audit(user.id,body.active?'account.activated':'account.suspended',target.id);});return json(200,{ok:true});}
       if(req.method==='POST'&&url.pathname==='/api/admin/orders'){admin(session);const customer=auth.user(body.customerId);if(customer?.role!=='customer'||!customer.active||!customer.verified)throw new HttpError(400,'Select a verified active customer');let order;try{order=store.approve({id:body.id,email:customer.email,amountKobo:body.amountKobo,customerId:customer.id});}catch{throw new HttpError(400,'Invalid or duplicate order');}store.audit(user.id,'order.approved_by_admin',order.id);return json(201,{order:publicOrder(order)});}
       if(req.method==='POST'&&url.pathname==='/api/admin/orders/revoke'){admin(session);if(!store.byId(body.orderId))throw new HttpError(404,'Order not found');store.revoke(body.orderId);store.audit(user.id,'checkout.revoked',body.orderId);return json(200,{ok:true});}
@@ -240,7 +258,7 @@ function createServer(settings, store = new Store(settings.file), request = fetc
     } finally {if(hashing)authBusy--;}
   });
   server.requestTimeout=30000;server.headersTimeout=10000;server.keepAliveTimeout=5000;server.maxHeadersCount=40;
-  server.on('close',()=>{automation.close();notifications.close();const finish=()=>{if(ai.busy||automation.busy||notifications.busy){const timer=setTimeout(finish,50);timer.unref();}else store.close();};finish();});return server;
+  server.on('close',()=>{automation.close();notifications.close();emailInbox.close();const finish=()=>{if(ai.busy||automation.busy||notifications.busy||emailInbox.busy){const timer=setTimeout(finish,50);timer.unref();}else store.close();};finish();});return server;
 }
 if(require.main===module){const settings=config(),server=createServer(settings);server.listen(settings.port,settings.host,()=>console.log('ChinaLowCost application: '+settings.appUrl));let stopping=false;const stop=()=>{if(stopping)return;stopping=true;server.close();server.closeIdleConnections();const deadline=setTimeout(()=>process.exit(1),55000);deadline.unref();};process.on('SIGTERM',stop);process.on('SIGINT',stop);}
 module.exports = { createServer };

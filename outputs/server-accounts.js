@@ -24,7 +24,7 @@ window.addEventListener('message',event=>{
 });
 function connectedRequest(action,body={}){return new Promise((resolve,reject)=>{
   const id=++connectedSequence;
-  const timer=setTimeout(()=>{connectedPending.delete(id);reject(Error('Server request timed out. Please try again.'));},action==='ai-discover'?180000:['ai-chat','openai-test'].includes(action)?90000:30000);
+  const timer=setTimeout(()=>{connectedPending.delete(id);reject(Error('Server request timed out. Please try again.'));},action==='ai-discover'?180000:['ai-chat','openai-test','email-sync'].includes(action)?90000:30000);
   connectedPending.set(id,{resolve,reject,timer});
   parent.postMessage({channel:'clc-server-auth',id,action,body},'*');
 });}

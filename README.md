@@ -21,7 +21,7 @@ GitHub Actions runs application checks on pushes and pull requests. Production d
 
 Passing automated tests does not guarantee production readiness. New inventory, purchase-order and finance flows need operator acceptance; real payment/refund/transfer, SMTP, malware scanning and device push need provider/device acceptance. Keep PAYMENT_MODE=test until those checks and the separate live-database setup are completed. No real transactions are performed by the test suite.
 
-See [remaining work](backend/Implementation-Status.md), [notification setup](backend/Notification-Status.md), [email setup](backend/Email-Templates.md), [WhatsApp setup](backend/WhatsApp-Setup.md) and [application review](backend/Application-Review.md).
+See [remaining work](backend/Implementation-Status.md), [notification setup](backend/Notification-Status.md), [Spacemail setup](backend/Spacemail-Setup.md), [email templates](backend/Email-Templates.md), [WhatsApp setup](backend/WhatsApp-Setup.md) and [application review](backend/Application-Review.md).
 
 ## Security and backups
 

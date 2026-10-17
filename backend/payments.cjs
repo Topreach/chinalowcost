@@ -1,3 +1,4 @@
+const {mailAvailable}=require('./email.cjs');
 const { createHmac, timingSafeEqual } = require('node:crypto');
 const { createMailer } = require('./email.cjs');
 const {HttpError}=require('./security.cjs');
@@ -54,7 +55,7 @@ class Payments {
     return timingSafeEqual(createHmac('sha512', key).update(raw).digest(), Buffer.from(signature, 'hex'));
   }
   async receipt(order) {
-    if (['sent', 'sending', 'uncertain'].includes(order.receipt) || this.config.emailProvider === 'disabled') return;
+    if (['sent', 'sending', 'uncertain'].includes(order.receipt) || !mailAvailable(this.mailer)) return;
     const claimed=this.store.claimReceipt(order.id);if(!claimed){Object.assign(order,this.store.byId(order.id));return;}Object.assign(order,claimed);
     try {
       const result = await this.mailer.send({ from: this.config.emailFrom, to: order.email, ...(this.config.supportEmail ? { replyTo: this.config.supportEmail } : {}), messageId: '<receipt-' + order.reference + '@' + new URL(this.config.appUrl).hostname + '>', subject: 'ChinaLowCost '+(order.paymentEnvironment==='live'?'':'test ')+'payment receipt — ' + order.id, text: `${order.paymentEnvironment==='live'?'Order':'Test order'} payment confirmed for ${order.id}.\nOrder total: NGN ${(order.amountKobo / 100).toFixed(2)}\nStore credit: NGN ${((order.walletKobo||0)/100).toFixed(2)}\n${order.paymentMethod==='cod'?'Cash on delivery':'Paystack'} portion: NGN ${((order.payableKobo??order.amountKobo)/100).toFixed(2)}\nReference: ${order.reference}\n${order.paymentEnvironment==='live'?'Payment confirmed. Keep this receipt for your records.':'This is a test transaction; no real funds were collected.'}` });

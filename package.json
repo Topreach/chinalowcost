@@ -16,6 +16,8 @@
     "backup:keygen": "node backend/backup-encrypted.cjs --keygen"
   },
   "dependencies": {
+    "imapflow": "^2.5.2",
+    "mailparser": "^3.9.40",
     "nodemailer": "^10.1.1",
     "qrcode": "1.5.4",
     "web-push": "^3.6.7"

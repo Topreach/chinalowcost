@@ -24,6 +24,9 @@ for(const role of ['customer','worker','admin']){
  for(const page of pages.filter(p=>p.Application.toLowerCase()===role)){hash='#'+page.ID;try{run('render()');checked++;}catch(e){throw Error(page.ID+': '+e.stack);}}
 }
 assert.equal(checked,86);
+run("connectedEmailConfig={host:'mail.spacemail.com',port:465,user:'support@example.test',from:'support@example.test',support:'support@example.test',imapHost:'mail.spacemail.com',imapUser:'support@example.test',webmail:'',version:0};connectedEmailInbox={openCount:1,messages:[{id:1,from:'<unsafe>@example.test',subject:'<script>bad</script>',created:1,status:'Open',attachmentCount:0}]}");
+const emailSettingsHtml=run('connectedEmailSettingsForm()'),emailInboxHtml=run('connectedEmailInboxPanel()');assert(emailSettingsHtml.includes('Use Spacemail server settings'));assert(emailSettingsHtml.includes('id="email-admin-password"'));assert(emailInboxHtml.includes('Read &amp; reply')||emailInboxHtml.includes('Read & reply'));assert(!emailInboxHtml.includes('<script>'));assert(!emailInboxHtml.includes('<unsafe>'));run('connectedEmailConfig=null;connectedEmailInbox=null');
+
 run("enterpriseReport={environment:'test',registeredCustomers:2,paidOrders:0,grossKobo:0,walletKobo:0,refundedKobo:0,ledger:[],customers:[{id:'C',email:'<unsafe>@example.test',orders:0,units:0,spentKobo:0}],productsSold:[],sales:[],collections:[],movements:[]}");
 const records=run('enterpriseReporting()');assert(records.includes('Customer purchase history'));assert(records.includes('Goods received and supplier origin'));assert(!records.includes('<unsafe>'));run('enterpriseReport=null');
 run('connectedSetSession({});connectedGooglePublic={signInEnabled:false}');

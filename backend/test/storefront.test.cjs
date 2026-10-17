@@ -27,6 +27,11 @@ test('source navigation accepts only HTTPS sources actually returned by the back
   await source('https://unreturned.example/');assert.equal(h.opened.length,0);
   await h.send('ai-chat');await source('javascript:alert(1)');assert.equal(h.opened.length,0);await source('https://seller.example/product');assert.equal(h.opened.length,1);assert.equal(h.opened[0][2],'noopener,noreferrer');
 });
+
+test('email bridge exposes only fixed mail routes and validates inbox identifiers',async()=>{
+ const h=host();for(const [action,route,method]of [['email-config','/api/admin/email','GET'],['email-public','/api/email/public','GET'],['email-inbox','/api/admin/email/inbox','GET'],['email-save','/api/admin/email','POST'],['email-verify','/api/admin/email/verify','POST'],['email-test','/api/admin/email/test','POST'],['email-sync','/api/admin/email/sync','POST'],['email-reply','/api/admin/email/reply','POST'],['email-status','/api/admin/email/status','POST']]){await h.send(action);assert.equal(h.requests.at(-1).url,route);assert.equal(h.requests.at(-1).options.method,method);}
+ await h.send('email-message',{body:{id:7}});assert.equal(h.requests.at(-1).url,'/api/admin/email/message?id=7');const count=h.requests.length;await h.send('email-message',{body:{id:'../../secrets'}});assert.equal(h.requests.length,count);assert.match(h.replies.at(-1).error,/Invalid email/);
+});
 test('designed UI keeps CSRF in host memory and forwards it on protected account actions',async()=>{
   const h=host();await h.send('me');assert.equal(h.requests[0].options.method,'GET');
   assert.equal(h.replies[0].data.csrf,undefined);
