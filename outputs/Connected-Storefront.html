@@ -734,6 +734,21 @@ const authReady=Promise.resolve();
 render();
 
 /* Server authentication adapter for the original designed screens. No local credentials. */
+// The opaque frame deliberately disallows native form submission. Dispatch only
+// the existing JavaScript submit handler after native validation, without navigation.
+function connectedSubmitForm(form){
+  if(!form||!form.hasAttribute('onsubmit')||!form.reportValidity())return;
+  form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
+}
+document.addEventListener('click',event=>{
+  const control=event.target.closest?.('button,input[type="submit"]');
+  if(!control?.form||control.type!=='submit'||control.disabled)return;
+  event.preventDefault();connectedSubmitForm(control.form);
+});
+document.addEventListener('keydown',event=>{
+  if(event.key!=='Enter'||event.isComposing||!event.target.matches?.('input')||['button','submit','checkbox','radio','file'].includes(event.target.type))return;
+  if(event.target.form?.hasAttribute('onsubmit')){event.preventDefault();connectedSubmitForm(event.target.form);}
+});
 let connectedUser=null,connectedMfa=false,connectedSequence=0;
 const connectedPending=new Map();
 window.addEventListener('message',event=>{
