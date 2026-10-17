@@ -7,5 +7,5 @@ function headers(res,settings){res.setHeader('Cache-Control','no-store');res.set
 async function read(req,max=65536){if(Number(req.headers['content-length']||0)>max)throw new HttpError(413,'Request too large');const chunks=[];let size=0;for await(const chunk of req){size+=chunk.length;if(size>max)throw new HttpError(413,'Request too large');chunks.push(chunk);}return Buffer.concat(chunks);}
 function csrf(req,session){if(!session||req.headers['x-csrf-token']!==session.csrf)throw new HttpError(403,'Invalid security token');}
 function requireSession(session){if(!session)throw new HttpError(401,'Sign in required');return session.user;}
-function admin(session){const user=requireSession(session);if(user.role!=='admin'||!session.mfa||!user.mfa_enabled)throw new HttpError(403,'Administrator MFA required');return user;}
+function admin(session){const user=requireSession(session);if(user.role!=='admin'||user.mfa_enabled&&!session.mfa)throw new HttpError(403,'Administrator access or enabled two-factor verification required');return user;}
 module.exports={HttpError,encryptionKey,headers,read,csrf,requireSession,admin};

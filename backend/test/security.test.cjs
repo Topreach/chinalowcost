@@ -42,9 +42,9 @@ test('unauthenticated access, CSRF bypass and wrong customer access are denied',
   assert.equal((await f.call('/api/paystack/verify',{method:'POST',session:own,headers:{Origin:'https://evil.test'},body:{orderId:f.order.id}})).status,403);
   assert.equal((await f.call('/api/admin/users',{session:own})).status,403);
 });
-test('administrator cannot access protected APIs until MFA enrollment is confirmed; OTP replay is rejected',async t=>{
+test('administrator without enrolled MFA can access APIs; enabling MFA revokes old sessions and rejects OTP replay',async t=>{
   const f=await fixture(t);const user=await f.auth.create('admin@example.test',f.password,'admin',true),pending=f.auth.issue(user);
-  assert.equal((await f.call('/api/admin/users',{session:pending})).status,403);
+  assert.equal((await f.call('/api/admin/users',{session:pending})).status,200);
   const enrollment=await(await f.call('/api/auth/mfa/enroll',{method:'POST',session:pending,body:{password:f.password}})).json();assert(enrollment.secret);assert(!f.auth.user(user.id).mfa_secret.includes(enrollment.secret));
   const code=totp(enrollment.secret),response=await f.call('/api/auth/mfa/confirm',{method:'POST',session:pending,body:{otp:code}});assert.equal(response.status,200);
   const result=await response.json(),cookie=response.headers.get('set-cookie').split(';')[0],token=cookie.split('=')[1];const elevated={token,csrf:result.csrf};

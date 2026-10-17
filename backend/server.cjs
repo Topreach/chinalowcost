@@ -68,7 +68,7 @@ function createServer(settings, store = new Store(settings.file), request = fetc
       const publicVideo=url.pathname.match(/^\/api\/storefront\/video\/([a-f0-9]{48})$/);if(req.method==='GET'&&publicVideo){const v=catalog.video(null,publicVideo[1]);res.setHeader('Cross-Origin-Resource-Policy','cross-origin');res.writeHead(200,{'Content-Type':v.mime});fs.createReadStream(v.path).on('error',()=>res.destroy()).pipe(res);return;}
       const publicMedia=url.pathname.match(/^\/api\/storefront\/media\/([a-f0-9]{48})$/);
       if(req.method==='GET'&&publicMedia){const media=catalog.media(null,publicMedia[1]);res.setHeader('Cross-Origin-Resource-Policy','cross-origin');res.writeHead(200,{'Content-Type':media.mime});fs.createReadStream(media.path).on('error',()=>res.destroy()).pipe(res);return;}
-      if(req.method==='GET'&&url.pathname==='/api/auth/me')return json(200,session?{user:auth.public(session.user),csrf:session.csrf,mfaRequired:session.user.role==='admin'&&!session.mfa}:{user:null});
+      if(req.method==='GET'&&url.pathname==='/api/auth/me')return json(200,session?{user:auth.public(session.user),csrf:session.csrf,mfaRequired:false}:{user:null});
       if(req.method==='POST'&&url.pathname==='/api/paystack/webhook'){
         const raw=await read(req);
         if (!payments.validSignature(raw, req.headers['x-paystack-signature'])) return json(401, { error: 'Invalid signature' });
@@ -123,7 +123,6 @@ function createServer(settings, store = new Store(settings.file), request = fetc
         if(action==='profile'){if(user.role==='admin')admin(session);return json(200,{profile:auth.saveProfile(user,body),user:auth.public(user)});}
         if(action==='sessions/revoke-others'){if(!await passwordMatches(body.password,user.password))throw new HttpError(403,'Current password required');const count=store.db.prepare('DELETE FROM sessions WHERE user_id=? AND hash<>?').run(user.id,session.hash).changes;store.audit(user.id,'sessions.others_revoked',user.id);return json(200,{ok:true,count});}
         if(['mfa/disable','mfa/recovery'].includes(action)){
-          if(action==='mfa/disable'&&user.role==='admin')throw new HttpError(403,'Two-factor authentication is mandatory for administrators');
           if(!user.mfa_enabled||!session.mfa)throw new HttpError(403,'Two-factor authentication must be enabled');
           if(!await passwordMatches(body.password,user.password))throw new HttpError(403,'Current password required');
           const result=store.transaction(()=>{if(!auth.factor(auth.user(user.id),body.otp))throw new HttpError(403,'Fresh authenticator or unused recovery code required');
