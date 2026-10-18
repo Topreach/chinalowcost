@@ -35,6 +35,9 @@ class Auth {
     this.dummy ||= passwordHash(random());
     if(!await passwordMatches(password,user?.password||await this.dummy)||!user?.active||!user.verified)return null;
     if(!user.mfa_enabled){this.store.audit(user.id,'session.login',user.id);return this.issue(user,false);}
+    return this.beginFactor(user);
+  }
+  beginFactor(user){
     this.db.exec('CREATE TABLE IF NOT EXISTS login_factors(hash TEXT PRIMARY KEY,user_id TEXT,password_hash TEXT,expires INTEGER,attempts INTEGER)');
     this.db.prepare('DELETE FROM login_factors WHERE expires<? OR user_id=?').run(Date.now(),user.id);
     const token=random();this.db.prepare('INSERT INTO login_factors VALUES(?,?,?,?,0)').run(digest(token),user.id,digest(user.password),Date.now()+300000);
