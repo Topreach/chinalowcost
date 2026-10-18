@@ -1,9 +1,9 @@
 /* Broad, editable category taxonomy and illustrated sample catalog. No real stock or claims. */
 const CATEGORY_TREE=[
  ['Vehicles',['Cars & SUVs','Vans & buses','Trucks','Electric vehicles']],
- ['Auto parts & accessories',['Tyres & wheels','Brakes & suspension','Engine & filters','Car electronics','Interior accessories']],
+ ['Auto parts & accessories',['Tyres & wheels','Brakes & suspension','Engine & filters','Car electronics','Interior accessories','Engine spare parts','Gearboxes & transmission','Clutches & drivetrain','Steering parts','Car batteries & starting systems','Alternators & ignition','Cooling systems & radiators','Fuel systems & injectors','Exhaust systems','Body panels & bumpers','Headlights & vehicle lighting','Windscreens & mirrors','Wipers & washers','Belts & hoses','Lubricants & vehicle fluids','Vehicle diagnostic tools','Truck & commercial vehicle parts','Electric vehicle parts']],
  ['Motorcycles & mobility',['Motorcycles','Scooters','Bicycles','Mobility parts']],
- ['Electronics',['Audio','Fans & small electronics','Cameras','Wearables']],
+ ['Electronics',['Audio','Fans & small electronics','Cameras','Wearables','Televisions & displays','Projectors','Electronic components','Smart home devices','Electronic accessories']],
  ['Phones & accessories',['Smartphones','Chargers & cables','Cases','Power banks']],
  ['Computers & networking',['Laptops','Desktops','Components','Networking']],
  ['Home appliances',['Refrigerators','Laundry','Cooking appliances','Air treatment']],
@@ -20,9 +20,9 @@ const CATEGORY_TREE=[
  ['Toys & games',['Educational toys','Building sets','Board games','Outdoor toys']],
  ['Sports & outdoors',['Fitness','Sports equipment','Camping','Outdoor recreation']],
  ['Tools & hardware',['Power tools','Hand tools','Fasteners','Workshop storage']],
- ['Machinery & industrial',['Manufacturing machinery','Pumps & compressors','Material handling','Industrial components']],
+ ['Machinery & industrial',['Manufacturing machinery','Pumps & compressors','Material handling','Industrial components','Construction machinery','Welding equipment','Generators','Food processing machinery','Textile & sewing machinery','Workshop machinery','Spare parts & bearings']],
  ['Solar & electrical',['Solar panels','Inverters','Batteries','Cables & fittings']],
- ['Building materials',['Tiles','Doors & windows','Plumbing','Construction fittings']],
+ ['Building materials',['Cement & concrete','Blocks & bricks','Sand & aggregates','Steel bars & reinforcement','Structural steel & metal sheets','Roofing sheets & accessories','Tiles','Flooring & paving','Doors & windows','Glass & glazing','Plumbing','Pipes & fittings','Sanitary ware & bathroom fittings','Paints & coatings','Adhesives & sealants','Waterproofing materials','Insulation materials','Ceilings & gypsum boards','Timber & boards','Construction fittings','Scaffolding & formwork','Building hardware']],
  ['Agriculture & food',['Farm tools','Irrigation','Agricultural materials','Agricultural chemicals','Herbicides','Sprayers & spraying equipment','Fertilizers & soil conditioners','Seeds & planting materials','Food packaging','Shelf-stable food']],
  ['Drinks & beverages',['Water','Soft drinks','Juices','Energy drinks','Tea & coffee']],
  ['Packaging & printing',['Cartons','Bags & pouches','Labels','Printing supplies']],
@@ -32,7 +32,7 @@ const CATEGORY_TREE=[
  ['Medicines & pharmaceuticals',['Medicines & drugs','Vitamins & supplements','First-aid medicines','Pharmaceutical supplies']],
  ['Chemicals & raw materials',['Industrial materials','Polymers','Cleaning inputs','Material samples']],
  ['Pet supplies',['Pet accessories','Carriers','Grooming','Feeding supplies']],
- ['Commercial equipment',['Shop fittings','Refrigeration','Restaurant equipment','Display systems']],
+ ['Commercial equipment',['Shop fittings','Refrigeration','Restaurant equipment','Display systems','Laundry equipment','Hotel supplies','POS systems & retail equipment','Cleaning equipment','Beauty & salon equipment']],
  ['Marine & transport',['Boats','Marine parts','Transport equipment','Logistics supplies']]
 ].map(([name,children])=>({name,children}));
 const EXTRA_SAMPLES=[
