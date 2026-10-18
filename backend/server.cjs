@@ -41,6 +41,7 @@ function createServer(settings, store = new Store(settings.file), request = fetc
       if(url.pathname==='/api/whatsapp/webhook'){if(req.method==='GET'){res.writeHead(200,{'Content-Type':'text/plain'});res.end(automation.verify(url.searchParams));return;}if(req.method==='POST'){automation.receive(await read(req,262144),req.headers['x-hub-signature-256']);return json(200,{ok:true});}throw new HttpError(405,'Method not allowed');}
       const ip=require('./proxy.cjs').clientIP(req,trustProxy);
       if(!store.limit('ip:'+ip,120,60000)){res.setHeader('Retry-After','60');throw new HttpError(429,'Too many requests. Try again later.');}
+      if(url.pathname==='/download/android')return require('./mobile-download.cjs').androidDownload(req,res,settings.mobileApkFile);
       if(req.method==='GET'&&url.pathname==='/application'){
         res.setHeader('Permissions-Policy','camera=(), microphone=(), geolocation=(self)');
         res.setHeader('Content-Security-Policy',"default-src 'none'; script-src 'self' https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/; style-src 'self'; connect-src 'self' https://www.google.com/recaptcha/; worker-src 'self'; manifest-src 'self'; frame-src 'self' https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/; frame-ancestors 'none'; base-uri 'none'; form-action 'none'");
