@@ -8,5 +8,5 @@ window.addEventListener('DOMContentLoaded',()=>{
     if(busy)return;busy=true;status.textContent='Verifying your Google account…';
     try{const data=await submit('/api/auth/google',{credential:value.credential,referralCode:document.getElementById('google-referral').value,stepwise:true});if(data.factorRequired){challenge=data.challenge;document.getElementById('google-start').hidden=true;form.hidden=false;status.textContent='Your account has two-factor authentication enabled.';document.getElementById('google-otp').focus();}else complete();}catch(error){document.getElementById('google-button').hidden=true;status.textContent=error.message+' Use “Start again” to retry.';}finally{busy=false;}
   }});
-  google.accounts.id.renderButton(document.getElementById('google-button'),{theme:'outline',size:'large',text:'continue_with',width:320});status.textContent='';
+  google.accounts.id.renderButton(document.getElementById('google-button'),{theme:'outline',size:'large',text:'continue_with',width:320,click_listener:()=>{status.textContent='Choose your account in the Google window. If no window appears, allow pop-ups for this website using the icon in your browser address bar, then click Continue with Google again.';}});status.textContent='';
 });

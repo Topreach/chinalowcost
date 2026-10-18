@@ -12,6 +12,7 @@ const csp=`<meta http-equiv="Content-Security-Policy" content="default-src 'none
 frame=frame.replace('<head>','<head>'+csp).replace('</body>','<script>'+fs.readFileSync(path.join(directory,'src/frame.js'),'utf8')+'</script></body>');
 fs.writeFileSync(path.join(output,'frame.html'),frame);
 let host=fs.readFileSync(path.join(root,'backend/public/storefront-host.js'),'utf8');
+host=host.replace(/  function googlePopupHelp\(url\)\{[\s\S]*?\n  \}\n/,'');
 host=host.replace("frame.src='/application/frame'","frame.src='frame.html'");
 host=host.replace(/if\(event.source===frame.contentWindow&&event.origin==='null'&&event.data\?\.channel==='clc-google-start'\)[^\n]+/,'if(event.source===frame.contentWindow&&event.origin===\'null\'&&event.data?.channel===\'clc-google-start\')window.clcMobile.google();');
 host=host.replaceAll('location.assign(','window.clcMobile.open(');

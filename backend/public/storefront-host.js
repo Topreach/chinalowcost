@@ -7,9 +7,19 @@
   let captchaLoading;
   function loadCaptcha(key){if(!captchaLoading)captchaLoading=new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='https://www.google.com/recaptcha/api.js?render='+encodeURIComponent(key);script.onload=()=>window.grecaptcha.ready(resolve);script.onerror=()=>{captchaLoading=null;reject(Error('Security check could not load'));};document.head.appendChild(script);});return captchaLoading;}
   let googlePopup;
+  function googlePopupHelp(url){
+    document.getElementById('google-popup-help')?.remove();
+    const dialog=document.createElement('dialog');dialog.id='google-popup-help';dialog.setAttribute('aria-labelledby','google-popup-title');
+    const title=document.createElement('h2');title.id='google-popup-title';title.textContent='Open Google sign-in';
+    const text=document.createElement('p');text.textContent='Your browser blocked the sign-in window. Select Open sign-in window, then allow pop-ups for this website if your browser asks. You can also continue in this tab.';
+    const retry=document.createElement('button');retry.type='button';retry.textContent='Open sign-in window';retry.addEventListener('click',()=>{googlePopup=window.open(url,'clc-google-login','popup,width=500,height=650');if(googlePopup)dialog.close();else text.textContent='The window is still blocked. Use the blocked-pop-up icon in your browser address bar to allow it, or continue in this tab.';});
+    const sameTab=document.createElement('a');sameTab.href=url;sameTab.textContent='Continue in this tab';
+    const cancel=document.createElement('button');cancel.type='button';cancel.textContent='Cancel';cancel.addEventListener('click',()=>dialog.close());
+    dialog.append(title,text,retry,sameTab,cancel);document.body.append(dialog);dialog.addEventListener('close',()=>dialog.remove());dialog.showModal();
+  }
   window.addEventListener('message',event=>{
     if(event.origin===location.origin&&event.source===googlePopup&&event.data?.channel==='clc-google-complete'){location.reload();return;}
-    if(event.source===frame.contentWindow&&event.origin==='null'&&event.data?.channel==='clc-google-start'){const googleUrl='/google-login'+(/^[A-Za-z0-9_-]{3,24}$/.test(event.data.referralCode||'')?'?referral_code='+encodeURIComponent(event.data.referralCode):'');googlePopup=window.open(googleUrl,'clc-google-login','popup,width=500,height=650');if(!googlePopup)location.assign(googleUrl);}
+    if(event.source===frame.contentWindow&&event.origin==='null'&&event.data?.channel==='clc-google-start'){const googleUrl='/google-login'+(/^[A-Za-z0-9_-]{3,24}$/.test(event.data.referralCode||'')?'?referral_code='+encodeURIComponent(event.data.referralCode):'');googlePopup=window.open(googleUrl,'clc-google-login','popup,width=500,height=650');if(!googlePopup)googlePopupHelp(googleUrl);}
     if(event.source===frame.contentWindow&&event.origin==='null'&&event.data?.channel==='clc-worker-map'){
       const workerId=event.data.workerId;
       fetch('/api/business/snapshot',{credentials:'same-origin'}).then(r=>{if(!r.ok)throw Error();return r.json();}).then(data=>{const p=data.staff?.find(w=>w.id===workerId)?.position;if(p&&Number.isFinite(p.latitude)&&Number.isFinite(p.longitude))location.assign('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(p.latitude+','+p.longitude));}).catch(()=>{});
