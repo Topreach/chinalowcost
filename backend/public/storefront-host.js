@@ -18,7 +18,7 @@
     dialog.append(title,text,retry,sameTab,cancel);document.body.append(dialog);dialog.addEventListener('close',()=>dialog.remove());dialog.showModal();
   }
   window.addEventListener('message',event=>{
-    if(event.origin===location.origin&&event.source===googlePopup&&event.data?.channel==='clc-google-complete'){location.reload();return;}
+    if(event.origin===location.origin&&event.source===googlePopup&&event.data?.channel==='clc-google-complete'){location.hash='#C02';location.reload();return;}
     if(event.source===frame.contentWindow&&event.origin==='null'&&event.data?.channel==='clc-google-start'){const googleUrl='/google-login'+(/^[A-Za-z0-9_-]{3,24}$/.test(event.data.referralCode||'')?'?referral_code='+encodeURIComponent(event.data.referralCode):'');googlePopup=window.open(googleUrl,'clc-google-login','popup,width=500,height=650');if(!googlePopup)googlePopupHelp(googleUrl);}
     if(event.source===frame.contentWindow&&event.origin==='null'&&event.data?.channel==='clc-worker-map'){
       const workerId=event.data.workerId;
