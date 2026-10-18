@@ -18,7 +18,7 @@
 
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">#245747</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/clc_icon</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/clc_brand</item>
         <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
     </style>
 </resources>
