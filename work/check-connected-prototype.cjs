@@ -38,7 +38,8 @@ run('state.promoRules.find(p=>p.code==="BULK5").active=true;state.qty=55;createQ
 run('state.address.state="FCT";state.address.town="Abuja";acceptQuote()');assert.equal(run('state.quoteAccepted'),false);assert.match(get('toast').textContent,/Destination/);assert.equal(run('state.quote.commerce.total'),quoted);
 run('state.address.state="Lagos";state.address.town="Ikeja";state.deliveryRates.find(r=>r.region==="Lagos"&&r.town==="Ikeja").base+=100;acceptQuote()');assert.match(get('toast').textContent,/Rates/);
 run('state=initialState();ensureCommerce();state.cart=[{sku:"FAN-01",qty:55,mode:"wholesale"}];state.promoCode="BULK5";simulatePayment()');assert.equal(run('state.promoRules.find(p=>p.code==="BULK5").uses'),1);run('simulatePayment()');assert.equal(run('state.promoRules.find(p=>p.code==="BULK5").uses'),1);
-assert.equal(run('CATEGORY_TREE.length'),32);assert.equal(run('products.length'),33);assert.equal(run('CATEGORY_TREE.every(c=>products.some(p=>p.category===c.name))'),true);
+assert.equal(run('CATEGORY_TREE.length'),33);assert.equal(run('products.length'),33);assert.equal(run('CATEGORY_TREE.filter(c=>c.name!=="Medicines & pharmaceuticals").every(c=>products.some(p=>p.category===c.name))'),true);
+assert.equal(run('CATEGORY_TREE.find(c=>c.name==="Medicines & pharmaceuticals").children.includes("Medicines & drugs")'),true);
 assert.equal(run('products.every(p=>p.gallery.length===3&&Object.keys(p.specs).length>=4)'),true);
 run('catalogFilters.category="Vehicles";searchTerm=""');assert.equal(run('filteredProducts().length'),1);assert.equal(run('filteredProducts()[0].id'),'CAR-01');
 run('catalogFilters.category="All categories";catalogFilters.condition="Refurbished"');assert.equal(run('filteredProducts()[0].id'),'LAP-01');

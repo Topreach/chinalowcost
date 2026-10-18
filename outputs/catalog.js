@@ -28,6 +28,7 @@ const CATEGORY_TREE=[
  ['Office & school',['Stationery','School supplies','Office equipment','Presentation supplies']],
  ['Security & safety',['CCTV','Access control','Protective equipment','Safety signage']],
  ['Medical & laboratory',['Lab instruments','Diagnostic equipment','Clinical furniture','Consumables']],
+ ['Medicines & pharmaceuticals',['Medicines & drugs','Vitamins & supplements','First-aid medicines','Pharmaceutical supplies']],
  ['Chemicals & raw materials',['Industrial materials','Polymers','Cleaning inputs','Material samples']],
  ['Pet supplies',['Pet accessories','Carriers','Grooming','Feeding supplies']],
  ['Commercial equipment',['Shop fittings','Refrigeration','Restaurant equipment','Display systems']],
