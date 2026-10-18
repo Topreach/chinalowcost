@@ -1,0 +1,29 @@
+{
+  "appId": "com.chinalowcost.app",
+  "appName": "ChinaLowCost",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https",
+    "cleartext": false
+  },
+  "android": {
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": false
+  },
+  "ios": {
+    "contentInset": "automatic"
+  },
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": false
+    },
+    "CapacitorCookies": {
+      "enabled": false
+    },
+    "SplashScreen": {
+      "launchAutoHide": true,
+      "backgroundColor": "#245747"
+    }
+  },
+  "loggingBehavior": "none"
+}

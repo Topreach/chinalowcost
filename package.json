@@ -13,7 +13,10 @@
     "build": "node work/build-prototype.cjs && node work/build-storefront.cjs",
     "test": "node work/check-connected-prototype.cjs && node work/check-accounts.cjs && node work/check-server-connected.cjs && node --test backend/test/*.test.cjs",
     "backup:encrypted": "node --env-file=.env backend/backup-encrypted.cjs",
-    "backup:keygen": "node backend/backup-encrypted.cjs --keygen"
+    "backup:keygen": "node backend/backup-encrypted.cjs --keygen",
+    "mobile:build": "npm --prefix mobile run build",
+    "mobile:test": "npm --prefix mobile test",
+    "mobile:android": "npm --prefix mobile run android"
   },
   "dependencies": {
     "imapflow": "^2.5.2",

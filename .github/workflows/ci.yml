@@ -26,3 +26,9 @@ jobs:
       - run: npm test
       - name: Validate release shell scripts
         run: bash -n work/deploy/release.sh work/deploy/install-release-layout.sh
+      - name: Install mobile tooling
+        run: npm ci --ignore-scripts --prefix mobile
+      - name: Build and check mobile web bundle
+        run: |
+          npm run build --prefix mobile
+          npm test --prefix mobile

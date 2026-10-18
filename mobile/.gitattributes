@@ -1,0 +1,6 @@
+android/gradlew text eol=lf
+*.bat text eol=crlf
+*.swift text eol=lf
+*.gradle text eol=lf
+*.pbxproj text eol=lf
+*.mjs text eol=lf

@@ -11,6 +11,8 @@ Customer, worker and Admin commerce application using the original designed inte
 
 The real application is served at /application. The standalone design preview is outputs/Screen-Blueprint.html. Build outputs retain the original homepage and CSS.
 
+Android and iOS development projects are in [mobile](mobile/README.md). Mobile assets are bundled locally and connect to the existing HTTPS backend; native builds and store releases are separate from Contabo updates.
+
 ## Production and updates
 
 Read [GitHub and server releases](backend/GitHub-Deployment.md) before deployment. Production settings, SQLite databases, uploads and encryption keys stay on the server outside Git. Releases are prepared separately, checked against an isolated database snapshot and activated during a short maintenance window. A failed initial startup restores the pre-release snapshot and previous code before reopening public traffic.
