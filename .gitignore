@@ -25,5 +25,9 @@ work/sample-quote.pdf
 private-backups/
 backups/
 coverage/
+mobile/.signing/
+*.jks
+*.keystore
+*.aab
 .release-*/
 work/Email-Template-Preview.html

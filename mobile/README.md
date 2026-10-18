@@ -58,13 +58,13 @@ Select the Apple development team and a unique bundle identifier in Xcode, then 
 ## Features still required before store publication
 
 1. **Device acceptance:** native session persistence, signup/reset, login and 2FA for every role, checkout/verification, photo attachment, evidence upload, location permissions, low-connectivity recovery, logout and worker drafts on real Android/iOS devices. Unit tests with a mock native transport are not native device acceptance.
-2. **Google sign-in:** native OAuth clients and a backend mobile authorization flow are not configured. The mobile app displays a clear pending-setup message and keeps password login available. It does not run Google's website popup inside the WebView.
-3. **reCAPTCHA:** if Admin enables website reCAPTCHA, native login/registration/reset currently fails closed with a setup message. Native-compatible abuse protection/challenge completion must be implemented before using those flows with reCAPTCHA-enabled deployments. Do not disable server security checks to make the app pass.
+2. **Google sign-in:** Direct native OAuth clients are not configured. A browser-based mobile authorization flow is implemented. Version 0.2.0 uses the system browser for the existing website Google/password flow, then asks for explicit approval of an expiring proof-bound mobile session. Direct native Google SDK clients are not used. Real-device acceptance is still required.
+3. **reCAPTCHA:** The mobile login/signup/reset screens now open the trusted system browser, retaining the website CAPTCHA and 2FA checks. Direct password calls still fail closed when CAPTCHA is required. Deploy the mobile authorization backend first and verify the browser approval flow on a real device.
 4. **Native push:** Firebase/APNs registration, device-token storage, provider sends and notification/deep-link routing are not implemented. The native enable-push action explicitly reports this; in-app notifications work through the backend.
 5. **Payment return links:** verified Android App Links/iOS Universal Links, associated domain files, production device tests and durable recovery after app process termination. Payments are never automatically resubmitted.
 6. **Private evidence viewer:** authenticated PDF/photo/video file downloads need native secure file handling; the app currently directs the operator to the website for private evidence downloads. Public product media and private draft media requested through the existing bridge use the native transport.
 7. **QR/barcode device scanning:** existing browser discovery remains; a dedicated native barcode plugin/device validation is still pending.
-8. **Store requirements:** account-deletion workflow, final icons/splash screens, privacy policy/data safety forms, accessibility/translation review, screenshots, versioning, signing and store accounts. Store acceptance is not guaranteed by generating a native project.
+8. **Store requirements:** account-deletion processing/retention policy and acceptance (request workflow implemented), final splash screens, privacy policy/data safety forms, accessibility/translation review, screenshots, versioning, signing and store accounts. Store acceptance is not guaranteed by generating a native project.
 
 ## Updates and staging
 
@@ -79,3 +79,7 @@ References checked October 18, 2026:
 - https://capacitorjs.com/docs/apis/http
 - https://capacitorjs.com/docs/apis/camera
 - https://capacitorjs.com/docs/guides/deep-links
+
+## Play candidate 0.2.0
+
+See Play-Release.md. Build-PlayBundle.ps1 creates a signed internal-test AAB with a private upload key. This is not a claim of production readiness or Google Play acceptance. The browser mobile sign-in flow requires the new backend endpoints and explicit matching-code approval; pending sessions expire after five minutes and can be consumed only by the initiating app proof. No Google password or web session cookie is copied into a deep link.
