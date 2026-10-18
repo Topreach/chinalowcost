@@ -13,7 +13,7 @@ frame=frame.replace('<head>','<head>'+csp).replace('</body>','<script>'+fs.readF
 fs.writeFileSync(path.join(output,'frame.html'),frame);
 let host=fs.readFileSync(path.join(root,'backend/public/storefront-host.js'),'utf8');
 host=host.replace("frame.src='/application/frame'","frame.src='frame.html'");
-host=host.replace(/if\(event.source===frame.contentWindow&&event.origin==='null'&&event.data\?\.channel==='clc-google-start'\)googlePopup=window.open\([^\n]+/,'if(event.source===frame.contentWindow&&event.origin===\'null\'&&event.data?.channel===\'clc-google-start\')window.clcMobile.google();');
+host=host.replace(/if\(event.source===frame.contentWindow&&event.origin==='null'&&event.data\?\.channel==='clc-google-start'\)[^\n]+/,'if(event.source===frame.contentWindow&&event.origin===\'null\'&&event.data?.channel===\'clc-google-start\')window.clcMobile.google();');
 host=host.replaceAll('location.assign(','window.clcMobile.open(');
 host=host.replace("window.open('/api/files/'+message.id,'_blank','noopener,noreferrer');","frame.contentWindow.postMessage({channel:'clc-mobile-notice',text:'Private evidence downloads require the mobile file viewer, which is not available in this test version.'},'*');");
 host=host.replace("window.open(target.href,'_blank','noopener,noreferrer')","window.clcMobile.open(target.href)");

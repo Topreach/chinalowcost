@@ -9,7 +9,7 @@
   let googlePopup;
   window.addEventListener('message',event=>{
     if(event.origin===location.origin&&event.source===googlePopup&&event.data?.channel==='clc-google-complete'){location.reload();return;}
-    if(event.source===frame.contentWindow&&event.origin==='null'&&event.data?.channel==='clc-google-start')googlePopup=window.open('/google-login'+(/^[A-Za-z0-9_-]{3,24}$/.test(event.data.referralCode||'')?'?referral_code='+encodeURIComponent(event.data.referralCode):''),'clc-google-login','popup,width=500,height=650');
+    if(event.source===frame.contentWindow&&event.origin==='null'&&event.data?.channel==='clc-google-start'){const googleUrl='/google-login'+(/^[A-Za-z0-9_-]{3,24}$/.test(event.data.referralCode||'')?'?referral_code='+encodeURIComponent(event.data.referralCode):'');googlePopup=window.open(googleUrl,'clc-google-login','popup,width=500,height=650');if(!googlePopup)location.assign(googleUrl);}
     if(event.source===frame.contentWindow&&event.origin==='null'&&event.data?.channel==='clc-worker-map'){
       const workerId=event.data.workerId;
       fetch('/api/business/snapshot',{credentials:'same-origin'}).then(r=>{if(!r.ok)throw Error();return r.json();}).then(data=>{const p=data.staff?.find(w=>w.id===workerId)?.position;if(p&&Number.isFinite(p.latitude)&&Number.isFinite(p.longitude))location.assign('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(p.latitude+','+p.longitude));}).catch(()=>{});
