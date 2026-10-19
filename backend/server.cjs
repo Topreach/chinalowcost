@@ -28,6 +28,7 @@ function createServer(settings, store = new Store(settings.file), request = fetc
   const operations=new (require('./operations.cjs').Operations)(store);store.operations=operations;const catalogImport=new (require('./catalog-import.cjs').CatalogImport)(store,business);const finance=new (require('./finance.cjs').Finance)(store,payments);
   const whatsapp=new (require('./whatsapp.cjs').WhatsApp)(store);
   const automation=new (require('./whatsapp-automation.cjs').WhatsAppAutomation)(store,auth,ai,catalog,request);if(settings.backgroundJobs!==false)automation.start();
+  const whatsappOrders=new (require('./whatsapp-orders.cjs').WhatsAppOrders)(store,auth,automation,settings,request);if(settings.backgroundJobs!==false)whatsappOrders.start();
   const {accountEmail}=require('./email-templates.cjs');
   const sendAccountEmail=async(user,kind,url)=>{if(!mailAvailable(mailer))return;try{const {previewHtml,...content}=accountEmail(settings,kind,url);await mailer.send({from:settings.emailFrom,to:user.email,...(settings.supportEmail?{replyTo:settings.supportEmail}:{}),...content});}catch{store.audit(user.id,'email.delivery_failed',user.id);}};
   const sendLink=async(user,kind)=>{if(!mailAvailable(mailer))throw new HttpError(503,'Email is not configured');const token=auth.challenge(user,kind);await sendAccountEmail(user,kind,settings.appUrl+'/secure#'+kind+'='+token);};
@@ -225,7 +226,7 @@ function createServer(settings, store = new Store(settings.file), request = fetc
       if(req.method==='GET'&&url.pathname==='/api/admin/messages') {admin(session);return json(200,messages.history());}
       if(req.method==='POST'&&url.pathname==='/api/admin/messages/deliver'){admin(session);if(!store.limit('email-batches:'+user.id,12,60000))throw new HttpError(429,'Email batch limit reached');return json(200,await messages.deliver(user));}
       if(req.method==='GET'&&url.pathname==='/api/admin/openai'){admin(session);return json(200,ai.public());}
-      if(req.method==='GET'&&url.pathname==='/api/admin/whatsapp/automation'){admin(session);return json(200,automation.public());}
+      if(req.method==='GET'&&url.pathname==='/api/admin/whatsapp/automation'){admin(session);return json(200,{...automation.public(),orderJobs:whatsappOrders.public()});}
       if(req.method==='POST'&&url.pathname==='/api/admin/whatsapp/automation'){admin(session);if(!store.limit('integration-password:'+user.id,5,900000))throw new HttpError(429,'Too many settings attempts');if(!await passwordMatches(body.password,user.password))throw new HttpError(403,'Current administrator password required');return json(200,automation.save(user,body));}
       if(req.method==='POST'&&url.pathname==='/api/admin/whatsapp'){admin(session);if(!store.limit('integration-password:'+user.id,5,900000))throw new HttpError(429,'Too many settings attempts');if(!await passwordMatches(body.password,user.password))throw new HttpError(403,'Current administrator password required');return json(200,whatsapp.save(user,body));}
       if(req.method==='GET'&&url.pathname==='/api/admin/google'){admin(session);return json(200,google.public());}
@@ -274,7 +275,7 @@ function createServer(settings, store = new Store(settings.file), request = fetc
     } finally {if(hashing)authBusy--;}
   });
   server.requestTimeout=30000;server.headersTimeout=10000;server.keepAliveTimeout=5000;server.maxHeadersCount=40;
-  server.on('close',()=>{automation.close();notifications.close();emailInbox.close();const finish=()=>{if(ai.busy||automation.busy||notifications.busy||emailInbox.busy){const timer=setTimeout(finish,50);timer.unref();}else store.close();};finish();});return server;
+  server.on('close',()=>{automation.close();whatsappOrders.close();notifications.close();emailInbox.close();const finish=()=>{if(ai.busy||automation.busy||whatsappOrders.busy||notifications.busy||emailInbox.busy){const timer=setTimeout(finish,50);timer.unref();}else store.close();};finish();});return server;
 }
 if(require.main===module){const settings=config(),server=createServer(settings);server.listen(settings.port,settings.host,()=>console.log('ChinaLowCost application: '+settings.appUrl));let stopping=false;const stop=()=>{if(stopping)return;stopping=true;server.close();server.closeIdleConnections();const deadline=setTimeout(()=>process.exit(1),55000);deadline.unref();};process.on('SIGTERM',stop);process.on('SIGINT',stop);}
 module.exports = { createServer };
