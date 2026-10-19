@@ -10,6 +10,12 @@ The lookup endpoint requires a customer session, CSRF token, explicit consent an
 
 Confirmed pins, phone, WhatsApp and preferred contact are saved in the private customer address, saved address book, quotation and order snapshots. Existing role/assignment controls continue to restrict access to order details. Quotes and transport prices still use approved state/town/weight rules, not unverified GPS or a reverse-geocoded suggestion.
 
+Manual street addresses, landmarks and delivery/access instructions are the primary instructions when GPS is inaccurate. Customers can select Use manual address instead to remove a pin, and can save a complete address with no GPS permission or coordinates. Additional delivery instructions are stored with the address and order snapshots.
+
+Admin A14/A15 includes a delivery-locations panel. Assigned worker task cards include View delivery address & directions. These load the customer-confirmed address, landmark, directions, phone/WhatsApp, preferred contact and optional pin from a session-protected order endpoint. Other customers and unassigned workers receive no delivery data. Removing the assignment also removes endpoint access. Revoked orders do not expose this delivery view.
+
+Search written address in maps and Open optional delivery pin are separate actions. The host rechecks order access before opening a fixed Google Maps search URL; no Maps API key is needed for those links. Opening a map is an explicit external disclosure of that address or pin. Staff are told to follow the written instructions and contact the customer if a map conflicts.
+
 This change does not send SMS/WhatsApp messages, verify a phone number, provide an embedded draggable map or implement continuous customer tracking. It captures accurate contact/destination details for the existing support and fulfilment workflows.
 
 Deploy the backend and rebuild/install mobile assets for the new fields to be available everywhere. Check real-device permission acceptance/denial, weak GPS, manual entry, same-phone conversion, other-town entry, saving/reusing addresses, quotation snapshots and assigned-worker visibility before production acceptance.
