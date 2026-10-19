@@ -22,6 +22,7 @@ function createServer(settings, store = new Store(settings.file), request = fetc
   const payments = new Payments(settings, store, request, mailer,auth);
   const messages=new Messages(store,settings,mailer),ai=new AI(store,auth,settings,request),catalog=new Catalog(store,settings,files,ai);
   const mobileAuth=new (require('./mobile-auth.cjs').MobileAuth)(store,auth);
+  const careers=new (require('./careers.cjs').Careers)(store,auth);
   const deletions=new (require('./account-deletion.cjs').AccountDeletion)(store);
   const business=new Business(store,catalog),google=new Google(store,auth,settings,request),fulfillment=new (require('./fulfillment.cjs').Fulfillment)(store,business,auth);
   const notifications=new (require('./notifications.cjs').Notifications)(store,auth,settings,mailer);store.notifications=notifications;notifications.messages=messages;if(settings.backgroundJobs!==false)notifications.start();
@@ -70,6 +71,7 @@ function createServer(settings, store = new Store(settings.file), request = fetc
       if(req.method==='GET'&&url.pathname==='/google-login.js'){res.writeHead(200,{'Content-Type':'application/javascript'});res.end(fs.readFileSync(path.join(__dirname,'public/google-login.js')));return;}
       if(req.method==='GET'&&url.pathname==='/api/google/public')return json(200,google.public());
       if(req.method==='GET'&&url.pathname==='/api/whatsapp/config')return json(200,whatsapp.public());
+      if(req.method==='GET'&&url.pathname==='/api/jobs')return json(200,{jobs:careers.list()});
       const session=auth.session(req);
       if(req.method==='GET'&&url.pathname==='/api/mobile-auth/info'){const item=mobileAuth.info(url.searchParams.get('id'));return json(200,{code:item.code,role:item.role,expires:item.expires});}
       if(req.method==='GET'&&url.pathname==='/api/auth/deletion-request')return json(200,{request:deletions.get(requireSession(session))});
@@ -160,6 +162,8 @@ function createServer(settings, store = new Store(settings.file), request = fetc
       const user=requireSession(session);if(user.role==='admin')admin(session);
       if(req.method==='POST')csrf(req,session);
       if(!store.limit('user:'+user.id,60,60000))throw new HttpError(429,'Too many requests. Try again later.');
+      if(req.method==='POST'&&url.pathname==='/api/business/job-apply'){if(!store.limit('job-applications:'+user.id,10,3600000))throw new HttpError(429,'Please try applying later');return json(201,careers.apply(user,body));}
+      if(url.pathname==='/api/admin/jobs'||url.pathname==='/api/admin/job-applications'){admin(session);operations.require(user,'owner');if(req.method==='GET')return json(200,url.pathname.endsWith('job-applications')?{applications:careers.applications()}:{jobs:careers.list(true)});if(req.method==='POST')return json(200,url.pathname.endsWith('job-applications')?careers.review(user,body):careers.save(user,body));}
       const videoMatch=url.pathname.match(/^\/api\/catalog\/video\/([a-f0-9]{48})$/);
       if(req.method==='GET'&&videoMatch){const v=catalog.video(user,videoMatch[1]);res.writeHead(200,{'Content-Type':v.mime});fs.createReadStream(v.path).on('error',()=>res.destroy()).pipe(res);return;}
       if(req.method==='POST'&&productVideo){const p=catalog.get(productVideo[1]);if(!p||!business.canCatalog(user,p))throw new HttpError(403,'Catalog draft access required');return json(201,await catalog.addVideo(user,p,await read(req,5242880)));}

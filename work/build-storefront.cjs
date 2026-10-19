@@ -22,7 +22,7 @@ bundle=bundle.replace("state.selected='${p.id}';state.draft.title='${p.name}';st
 bundle=bundle.replaceAll('${p.name}','${esc(p.name)}');
 bundle=bundle.replace('onclick="${action}"','onclick="${esc(action)}"');
 bundle=bundle.replace('${title}</h1>','${connectedText(title)}</h1>').replace('${desc}</p>','${connectedText(desc)}</p>');
-const adapter=['server-accounts.js','server-business.js','server-ai.js','server-google.js','server-growth.js','server-payments.js','server-profile.js','server-wallet.js','server-fulfillment.js','server-whatsapp.js','server-notifications.js','server-enterprise.js','server-email.js','server-delivery.js'].map(file=>fs.readFileSync(path.join(out,file),'utf8')).join('\n');
+const adapter=['server-accounts.js','server-business.js','server-ai.js','server-google.js','server-growth.js','server-payments.js','server-profile.js','server-wallet.js','server-fulfillment.js','server-whatsapp.js','server-notifications.js','server-enterprise.js','server-email.js','server-delivery.js','server-careers.js'].map(file=>fs.readFileSync(path.join(out,file),'utf8')).join('\n');
 const widgetStyles=fs.readFileSync(path.join(out,'chat-widget.css'),'utf8');
 const html=original.slice(0,start).replace('</head>','<style id="chat-widget-styles">'+widgetStyles+'</style></head>')+pages+'<script>'+bundle+'\n'+adapter+'</script></body></html>';
 fs.writeFileSync(path.join(out,'Connected-Storefront.html'),html);

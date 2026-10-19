@@ -20,6 +20,8 @@ Payments are processed through Paystack where configured. ChinaLowCost records o
 
 ## Service providers
 
+Applicants may submit a name, contact number, account email, qualifications and experience for a published company vacancy with explicit consent. Recruitment details are available to owner administrators for assessment and contact. Application text and contact details are encrypted in the application database. The operator must establish and publish recruitment retention periods and applicant access/deletion procedures before collecting real applications; accepting a candidate does not automatically create a staff account.
+
 Depending on the enabled services, providers include Contabo for application hosting, Cloudflare for website delivery/security, Spacemail for business email, Google for sign-in/security services, OpenAI for AI assistance and Paystack for payment processing. Delivery and supplier information is shared only as needed for the applicable transaction and assigned operational roles. The operator must confirm the actual providers, processing locations and any other recipients before publication.
 
 ## Security and choices

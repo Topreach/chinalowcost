@@ -1,0 +1,20 @@
+const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),os=require('node:os'),path=require('node:path');
+const {config}=require('../config.cjs'),{Store}=require('../store.cjs'),{Auth}=require('../auth.cjs'),{createServer}=require('../server.cjs');
+test('careers controls publication, application privacy, verified consent, duplicates and owner review',async t=>{
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'clc-careers-')),settings={...config({DATABASE_FILE:path.join(dir,'db.sqlite'),UPLOAD_DIRECTORY:path.join(dir,'files'),APP_ENCRYPTION_KEY:'ab'.repeat(32)}),backgroundJobs:false},store=new Store(settings.file),auth=new Auth(store,settings),sessions={};
+ for(const role of ['customer','worker','admin'])sessions[role]=auth.issue(await auth.create(role+'@example.test','Careers testing password 2026!',role,true));
+ const server=createServer(settings,store,async()=>{throw Error('No network');},null);await new Promise(r=>server.listen(0,'127.0.0.1',r));t.after(async()=>{await new Promise(r=>server.close(r));store.close();fs.rmSync(dir,{recursive:true,force:true});});
+ const call=(route,session,body,token=true)=>fetch('http://127.0.0.1:'+server.address().port+route,{method:body?'POST':'GET',headers:{Origin:settings.appUrl,'Content-Type':'application/json',...(session?{Cookie:'clc_session='+session.token}:{}),...(session&&token?{'X-CSRF-Token':session.csrf}:{})},...(body?{body:JSON.stringify(body)}:{})});
+ const job={title:'Procurement officer',location:'Guangzhou',employmentType:'Full-time',description:'Visit suppliers',requirements:'Procurement experience',instructions:'Describe your relevant experience',deadline:Date.now()+86400000,status:'draft'};
+ assert.equal((await call('/api/admin/jobs',sessions.customer,job)).status,403);assert.equal((await call('/api/admin/jobs',sessions.admin,job,false)).status,403);
+ const draft=await (await call('/api/admin/jobs',sessions.admin,job)).json();assert.equal((await (await call('/api/jobs')).json()).jobs.length,0);
+ const published=await (await call('/api/admin/jobs',sessions.admin,{...draft,status:'published'})).json();assert.equal((await (await call('/api/jobs')).json()).jobs.length,1);assert.equal((await call('/api/admin/jobs',sessions.admin,{...draft,status:'closed'})).status,409);
+ const application={jobId:published.id,name:'Applicant Test',phone:'+2348012345678',experience:'Supplier sourcing experience',consent:true};
+ assert.equal((await call('/api/business/job-apply',null,application)).status,401);assert.equal((await call('/api/business/job-apply',sessions.customer,{...application,consent:false})).status,400);
+ const applied=await (await call('/api/business/job-apply',sessions.customer,application)).json();assert.equal(applied.status,'Submitted');assert.equal((await (await call('/api/business/job-apply',sessions.customer,application)).json()).status,'already-submitted');
+ const raw=store.db.prepare('SELECT record FROM job_applications').get().record;assert.ok(!raw.includes(application.experience));assert.ok(!raw.includes(application.phone));
+ assert.equal((await call('/api/admin/job-applications',sessions.worker)).status,403);const a=(await (await call('/api/admin/job-applications',sessions.admin)).json()).applications[0];assert.equal(a.experience,application.experience);
+ assert.equal((await call('/api/admin/job-applications',sessions.admin,{id:a.id,version:a.version,state:'Accepted'})).status,200);assert.equal(auth.user(sessions.customer.user.id).role,'customer');
+ await call('/api/admin/jobs',sessions.admin,{...published,status:'closed'});assert.equal((await call('/api/business/job-apply',sessions.worker,application)).status,409);
+ store.db.prepare('INSERT INTO admin_scopes VALUES(?,?)').run(sessions.admin.user.id,JSON.stringify(['finance']));assert.equal((await call('/api/admin/job-applications',sessions.admin)).status,403);
+});
