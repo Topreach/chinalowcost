@@ -1,4 +1,4 @@
-param([switch]$CreateUploadKey)
+param([switch]$CreateUploadKey, [switch]$IncludeTestApk)
 $ErrorActionPreference = 'Stop'
 $mobileRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $privateDirectory = Join-Path $mobileRoot '.signing'
@@ -36,12 +36,15 @@ try {
   & npx cap sync android
   if ($LASTEXITCODE -ne 0) { throw 'Android sync failed.' }
   Push-Location android
-  try { & .\gradlew.bat bundleRelease --no-daemon; if ($LASTEXITCODE -ne 0) { throw 'Release bundle build failed.' } } finally { Pop-Location }
+  try { $buildTasks=@('bundleRelease'); if ($IncludeTestApk) { $buildTasks+='assembleDebug' }; & .\gradlew.bat @buildTasks --no-daemon; if ($LASTEXITCODE -ne 0) { throw 'Android build failed.' } } finally { Pop-Location }
   New-Item -ItemType Directory -Force artifacts | Out-Null
   $bundle=Join-Path $mobileRoot 'artifacts\ChinaLowCost-0.2.0-internal.aab'
   Copy-Item -LiteralPath 'android\app\build\outputs\bundle\release\app-release.aab' -Destination $bundle
-  & (Join-Path $javaDirectory 'bin\jarsigner.exe') -verify $bundle
-  if ($LASTEXITCODE -ne 0) { throw 'Bundle signature verification failed.' }
+  $signatureOutput=& (Join-Path $javaDirectory 'bin\jarsigner.exe') -verify $bundle
+  $signatureExit=$LASTEXITCODE
+  $signatureOutput | Where-Object { $_ -notmatch '^- Entry ' } | Select-Object -First 12 | ForEach-Object { Write-Host $_ }
+  if ($signatureExit -ne 0) { throw 'Bundle signature verification failed.' }
+  if ($IncludeTestApk) { Copy-Item -LiteralPath 'android\app\build\outputs\apk\debug\app-debug.apk' -Destination (Join-Path $mobileRoot 'artifacts\ChinaLowCost-0.2.0-debug.apk') }
   Write-Host "Signed internal-test candidate: $bundle"
   Write-Host 'This build is not approved for public release. Complete mobile/Play-Release.md first.'
 } finally {

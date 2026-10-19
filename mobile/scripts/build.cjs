@@ -20,10 +20,12 @@ host=host.replace("window.open('/api/files/'+message.id,'_blank','noopener,noref
 host=host.replace("window.open(target.href,'_blank','noopener,noreferrer')","window.clcMobile.open(target.href)");
 host=host.replace("if(cfg.captchaEnabled){","if(cfg.captchaEnabled){throw Error('This server requires reCAPTCHA. Native security-check integration is pending; use the website to sign in.');");
 host=host.replace("if(!navigator.geolocation)throw Error('Device location is unavailable');",'');
+host=host.replace("if(!navigator.geolocation)throw Error('Device location is unavailable. Enter your address manually.');",'');
 const position="const p=await new Promise((resolve,reject)=>navigator.geolocation.getCurrentPosition(resolve,()=>reject(Error('Location permission denied or location unavailable')),{enableHighAccuracy:true,timeout:15000,maximumAge:0}));";
-if(!host.includes(position))throw Error('Review native location integration: website host changed');host=host.replace(position,'const p=await window.clcMobile.location();');
+if(!host.includes(position))throw Error('Review native location integration: website host changed');host=host.replaceAll(position,'const p=await window.clcMobile.location();');
 host=host.replace('async function enableNotificationDevice(){','async function enableNotificationDevice(){return window.clcMobile.enablePush();');
 host=host.replace('async function disableNotificationDevice(){',"async function disableNotificationDevice(){return;");
+host=host.replace("const p=await new Promise((resolve,reject)=>navigator.geolocation.getCurrentPosition(resolve,()=>reject(Error('Location permission denied or unavailable. Enter your address manually.')),{enableHighAccuracy:true,timeout:15000,maximumAge:0}));",'const p=await window.clcMobile.location();');
 fs.writeFileSync(path.join(output,'host.js'),host);fs.copyFileSync(path.join(root,'backend/public/offline-queue.js'),path.join(output,'offline-queue.js'));
 require('esbuild').buildSync({entryPoints:[path.join(directory,'src/runtime.mjs')],bundle:true,outfile:path.join(output,'runtime.js'),format:'iife',target:'es2022',define:{__CLC_API_ORIGIN__:JSON.stringify(parsed.origin)},legalComments:'none'});
 console.log('Built bundled mobile interface for '+parsed.origin+'. No server credentials or databases packaged.');

@@ -3,7 +3,7 @@ let connectedGoogleConfig=null,connectedGoogleLoading=false,connectedGooglePubli
 const connectedGoogleTrackingBase=opsTrackingPage;opsTrackingPage=(admin=false)=>connectedGoogleTrackingBase(admin).replace('Device coordinates are shared only after a worker clicks the location button; they remain in memory and are cleared on shift end. No location is sent to an external map.','Device coordinates are sent to the server only after an explicit on-shift check-in. They are removed on shift end or when the tracking view next reads a check-in older than 15 minutes. Opening Google Maps shares the selected coordinates with Google.');
 function connectedGoogleForm(){const c=connectedGoogleConfig;if(!c)return card('Google services',note('Loading Google configuration…'));
   return primaryForm('Google services & location',
-    note('GPS check-ins need browser permission, not a Google key. Google sign-in is for new customer accounts; existing accounts continue using their passwords.')+
+    note('GPS check-ins and customer delivery pins need device permission, not a Google key. Optional customer address suggestions use the Maps key with Google Geocoding API enabled and server IP restrictions. Google sign-in is for new customer accounts; existing accounts continue using their passwords.')+
     field('google-client','Google web OAuth client ID',c.clientId)+
     field('google-maps','Maps API key (optional; leave blank to keep saved key)','','password','autocomplete="off"')+row('Maps key',c.mapsConfigured?'Encrypted on server':'Not saved')+
     note('Worker map links work without a Maps API key. The optional key is stored for future embedded Maps/Places integration; those APIs are not enabled here.')+
