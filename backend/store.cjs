@@ -23,7 +23,7 @@ class Store {
   }
   close() { if(!this.closed){this.db.close();this.closed=true;} }
   transaction(action) { this.db.exec('BEGIN IMMEDIATE'); try { const result=action();this.db.exec('COMMIT');return result; } catch(e){this.db.exec('ROLLBACK');throw e;} }
-  audit(actor,action,id=null) {const event=this.db.prepare('INSERT INTO audit(at,actor,action,object_id) VALUES(?,?,?,?)').run(new Date().toISOString(),actor||null,action,id);if(this.notifications)this.notifications.event(Number(event.lastInsertRowid),actor,action,id);}
+  audit(actor,action,id=null) {const event=this.db.prepare('INSERT INTO audit(at,actor,action,object_id) VALUES(?,?,?,?)').run(new Date().toISOString(),actor||null,action,id);if(this.notifications)this.notifications.event(Number(event.lastInsertRowid),actor,action,id);if(['order.cancelled','wallet.checkout_cancelled'].includes(action))this.supplierPortal?.cancelOrder(id);}
   save(order) {
     const {token,...record}=order;
     this.transaction(()=>{const current=this.byId(order.id);const next={...record,...(current?.revoked?{revoked:true}:{})};this.db.prepare('UPDATE orders SET record=? WHERE id=?').run(JSON.stringify(next),order.id);if(order.status==='paid')this.db.prepare('INSERT OR IGNORE INTO ledger VALUES(?,?,?,?,?)').run(order.reference,order.id,order.amountKobo,order.currency,order.paidAt);});
@@ -46,7 +46,7 @@ class Store {
   byReference(reference) { return this.parse(this.db.prepare('SELECT record FROM orders WHERE reference=?').get(reference)); }
   orders(user){return this.db.prepare(user.role==='admin'?'SELECT record FROM orders ORDER BY rowid DESC LIMIT 200':'SELECT record FROM orders WHERE customer_id=? ORDER BY rowid DESC LIMIT 200').all(...(user.role==='admin'?[]:[user.id])).map(row=>this.parse(row));}
   allowed(user,order,worker=false){return !!order&&(user.role==='admin'||order.customerId===user.id||(worker&&user.role==='worker'&&!!this.db.prepare('SELECT 1 FROM assignments WHERE order_id=? AND worker_id=?').get(order.id,user.id)));}
-  revoke(id){this.transaction(()=>{const order=this.byId(id);if(!order)throw Error('Unknown order');order.revoked=true;this.db.prepare('UPDATE orders SET token_hash=NULL,record=? WHERE id=?').run(JSON.stringify(order),id);});}
+  revoke(id){this.transaction(()=>{const order=this.byId(id);if(!order)throw Error('Unknown order');order.revoked=true;this.db.prepare('UPDATE orders SET token_hash=NULL,record=? WHERE id=?').run(JSON.stringify(order),id);this.supplierPortal?.cancelOrder(id);});}
   limit(key,max,windowMs){const now=Date.now();return this.transaction(()=>{this.db.prepare('DELETE FROM rate_limits WHERE until_time<?').run(now);const row=this.db.prepare('SELECT count FROM rate_limits WHERE key=?').get(key);if(row&&row.count>=max)return false;this.db.prepare('INSERT INTO rate_limits VALUES(?,1,?) ON CONFLICT(key) DO UPDATE SET count=count+1').run(key,now+windowMs);return true;});}
 }
 module.exports = { Store,digest };

@@ -1,0 +1,17 @@
+# Supplier access and customer demand
+
+Admin → Customers & support (A22) → Manage supplier accounts & demand. Owner/operations administrators can manage the portal. Create supplier records with evidence and obtain independent verification through the existing supplier workflow first.
+
+Supplier representatives register using ordinary customer account authentication and verify their email. Admin links the verified account email to exactly one verified supplier. Supplier entitlement is separate from customer/worker/Admin roles; it grants no staff privileges. The representative signs in and opens Supplier portal on their dashboard/support screen. Disable access in supplier management; placing the supplier On hold also blocks portal access. Multiple representatives may belong to the same supplier.
+
+Link each exact published product SKU to one responsible supplier before taking quotations. Existing quotes are not backfilled. A new quotation creates one durable enquiry per linked supplier in the same database transaction as the quote. Products without a link continue through manual procurement; no supplier availability is implied. Retail/wholesale lines with the same SKU are combined for availability.
+
+Supplier responses include per-SKU quantity and preparation days: Available, Shortfall or Unavailable. Prices, margin, customer identity, address, payment details and internal quote/order identifiers are excluded from supplier payloads. Response fields are structured; no free-text price fields are sent. The enquiry reference, product name/SKU, quantity, deadline and instruction are disclosed. An enquiry does not authorise preparation. Linked supplier enquiries must be Available before staff can approve a quotation.
+
+Admin may authorise preparation only against the enquiry's matching paid, non-revoked order. The supplier then records Accepted → Preparing → Ready for pickup, or Unable to fulfil. Admin may cancel; order cancellation/revocation cancels linked preparation and queues a notification. Expired enquiries and invalidated orders cannot receive responses. Supplier confirmation is not physical inspection, an inventory receipt or delivery proof; existing worker fulfilment checks still apply. Refunds and changes after pickup require operational review, not an automatic cancellation of physical goods.
+
+Notifications are durable in-app records and use the existing email delivery queue, subject to enabled SMTP and account notification preferences. Messages contain only a generic prompt to open the portal. Email acceptance is not confirmed delivery. No additional WhatsApp template/consent integration is included for suppliers. The existing customer WhatsApp automation remains separate.
+
+Workers can view price-free supplier progress only for their active assigned orders. Removing/revoking/completing the assignment removes that view. Admin sees internal quotation/order references for reconciliation. The lists show the latest 500 admin enquiries / 200 supplier or worker enquiries. Supplier responses use optimistic versions to reject stale updates.
+
+Deploy backend code and rebuild Android with a higher version code for a new Play release. Existing installed mobile bundles will not gain local UI changes until updated. Include supplier representative identity, availability records and notification processing in the approved privacy policy and retention decisions before public use.

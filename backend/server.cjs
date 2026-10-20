@@ -26,6 +26,7 @@ function createServer(settings, store = new Store(settings.file), request = fetc
   const deletions=new (require('./account-deletion.cjs').AccountDeletion)(store);
   const business=new Business(store,catalog),google=new Google(store,auth,settings,request),fulfillment=new (require('./fulfillment.cjs').Fulfillment)(store,business,auth);
   const notifications=new (require('./notifications.cjs').Notifications)(store,auth,settings,mailer);store.notifications=notifications;notifications.messages=messages;if(settings.backgroundJobs!==false)notifications.start();
+  const supplierPortal=new (require('./supplier-portal.cjs').SupplierPortal)(store);store.supplierPortal=supplierPortal;
   const operations=new (require('./operations.cjs').Operations)(store);store.operations=operations;const catalogImport=new (require('./catalog-import.cjs').CatalogImport)(store,business);const finance=new (require('./finance.cjs').Finance)(store,payments);
   const whatsapp=new (require('./whatsapp.cjs').WhatsApp)(store);
   const automation=new (require('./whatsapp-automation.cjs').WhatsAppAutomation)(store,auth,ai,catalog,request);if(settings.backgroundJobs!==false)automation.start();
@@ -162,6 +163,9 @@ function createServer(settings, store = new Store(settings.file), request = fetc
       const user=requireSession(session);if(user.role==='admin')admin(session);
       if(req.method==='POST')csrf(req,session);
       if(!store.limit('user:'+user.id,60,60000))throw new HttpError(429,'Too many requests. Try again later.');
+      if(req.method==='GET'&&url.pathname==='/api/worker/supplier-enquiries')return json(200,supplierPortal.workerSnapshot(user));
+      if(url.pathname==='/api/supplier/portal'){if(req.method==='GET')return json(200,supplierPortal.snapshot(user));if(req.method==='POST')return json(200,supplierPortal.respond(user,body));}
+      if(url.pathname==='/api/admin/supplier-portal'){admin(session);operations.require(user,'operations');if(req.method==='GET')return json(200,supplierPortal.snapshot(user,true));if(req.method==='POST')return json(200,['prepare','cancel'].includes(body.action)?supplierPortal.instruct(user,body):supplierPortal.configure(user,body));}
       if(req.method==='POST'&&url.pathname==='/api/business/job-apply'){if(!store.limit('job-applications:'+user.id,10,3600000))throw new HttpError(429,'Please try applying later');return json(201,careers.apply(user,body));}
       if(url.pathname==='/api/admin/jobs'||url.pathname==='/api/admin/job-applications'){admin(session);operations.require(user,'owner');if(req.method==='GET')return json(200,url.pathname.endsWith('job-applications')?{applications:careers.applications()}:{jobs:careers.list(true)});if(req.method==='POST')return json(200,url.pathname.endsWith('job-applications')?careers.review(user,body):careers.save(user,body));}
       const videoMatch=url.pathname.match(/^\/api\/catalog\/video\/([a-f0-9]{48})$/);
