@@ -19,7 +19,7 @@
     "mobile:android": "npm --prefix mobile run android"
   },
   "dependencies": {
-    "imapflow": "^2.5.2",
+    "imapflow": "^2.5.9",
     "mailparser": "^3.9.40",
     "nodemailer": "^10.1.1",
     "qrcode": "1.5.4",
