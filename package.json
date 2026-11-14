@@ -23,7 +23,7 @@
     "mailparser": "^3.9.40",
     "nodemailer": "^10.1.1",
     "qrcode": "1.5.4",
-    "web-push": "^3.6.7"
+    "web-push": "^4.0.0"
   },
   "engines": {
     "node": ">=24.14.0"
